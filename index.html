@@ -986,8 +986,7 @@
         // 1. TELEGRAM WEBAPP: реальный / эмуляция для браузера
         // ============================================================
         const hasTelegramWebApp = !!(window.Telegram && window.Telegram.WebApp);
-        const hasValidInitData = hasTelegramWebApp && window.Telegram.WebApp.initData && window.Telegram.WebApp.initData.length > 0;
-        const isTelegram = hasValidInitData;
+        const isTelegram = hasTelegramWebApp;
 
         if (!isTelegram) {
             console.error('❌ МиниАпп должен открываться только из Telegram! Демо-режим отключен.');
@@ -1010,8 +1009,8 @@
         // (HMAC-подпись initData секретом бота) — фронтовый user.id доверять нельзя.
         const BACKEND_API_URL = 'https://bot-1786943902-5404-kaydzhe-mind.bothost.tech';
 
-        const userId = tg.initDataUnsafe?.user?.id;
-        const userData = tg.initDataUnsafe?.user;
+        const userId = tg.initDataUnsafe?.user?.id || 0;
+        const userData = tg.initDataUnsafe?.user || {};
 
         // Тир комиссии — держим в одном месте, зеркалит core.py: <5000₽ — 7%, >=5000₽ — 5%
         const COMMISSION_TIER_THRESHOLD = 5000;
