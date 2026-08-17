@@ -986,30 +986,13 @@
         // 1. TELEGRAM WEBAPP: реальный / эмуляция для браузера
         // ============================================================
         const hasTelegramWebApp = !!(window.Telegram && window.Telegram.WebApp);
-        const isTelegram = hasTelegramWebApp;
+        const hasValidInitData = hasTelegramWebApp && window.Telegram.WebApp.initData && window.Telegram.WebApp.initData.length > 0;
+        const isTelegram = hasValidInitData;
 
         if (!isTelegram) {
-            window.Telegram = {
-                WebApp: {
-                    ready: function() { console.log('WebApp ready (emulated)'); },
-                    expand: function() { console.log('WebApp expand (emulated)'); },
-                    initData: '',
-                    HapticFeedback: { impactOccurred: function(){}, notificationOccurred: function(){} },
-                    sendData: function(data) {
-                        console.log('SendData:', data);
-                        showNotification('Локальный демо-режим: действие обработано в браузере', 'info');
-                        try { handleLocalAction(JSON.parse(data)); } catch (e) {}
-                    },
-                    initDataUnsafe: {
-                        user: { id: 12345, first_name: 'Тестовый', last_name: 'Пользователь', username: 'test_user', language_code: 'ru' }
-                    },
-                    onEvent: function(event, callback) {
-                        if (!window._tgEvents) window._tgEvents = {};
-                        window._tgEvents[event] = callback;
-                    }
-                }
-            };
-            console.log('Telegram WebApp эмулирован для браузера');
+            console.error('❌ МиниАпп должен открываться только из Telegram! Демо-режим отключен.');
+            document.body.innerHTML = '<div style="text-align:center; padding:50px; font-size:18px; color:red;"><strong>❌ Ошибка: эта ссылка работает только внутри Telegram!</strong><br><br>Откройте МиниАпп через кнопку в боте @HoldDealBot</div>';
+            throw new Error('Mini App must be opened from Telegram');
         }
 
         function emitTgEvent(type, data) {
@@ -1027,8 +1010,8 @@
         // (HMAC-подпись initData секретом бота) — фронтовый user.id доверять нельзя.
         const BACKEND_API_URL = 'https://bot-1786943902-5404-kaydzhe-mind.bothost.tech';
 
-        const userId = tg.initDataUnsafe?.user?.id || 12345;
-        const userData = tg.initDataUnsafe?.user || { id: 12345, first_name: 'Тестовый', username: 'test_user' };
+        const userId = tg.initDataUnsafe?.user?.id;
+        const userData = tg.initDataUnsafe?.user;
 
         // Тир комиссии — держим в одном месте, зеркалит core.py: <5000₽ — 7%, >=5000₽ — 5%
         const COMMISSION_TIER_THRESHOLD = 5000;
