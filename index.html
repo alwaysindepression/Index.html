@@ -1,0 +1,2158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HoldDeal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg: #eef1f7;
+            --bg-tint: radial-gradient(1200px 600px at 15% -10%, rgba(47,111,237,.10), transparent 60%),
+                       radial-gradient(900px 500px at 110% 10%, rgba(76,201,240,.10), transparent 55%);
+            --card: #ffffff;
+            --text: #101625;
+            --text-secondary: #5b6577;
+            --border: #e6e9f2;
+            --shadow: 0 1px 2px rgba(16,22,37,.04), 0 8px 24px rgba(16,22,37,.06);
+            --input-bg: #f4f6fb;
+            --tab-bg: #eaedf5;
+            --modal-bg: #ffffff;
+            --hover: rgba(16,22,37,.035);
+            --primary: #2f6fed;
+            --primary-2: #4cc9f0;
+            --ink: #060b16;
+            --ink-2: #12213f;
+            --gold: #e6a13b;
+            --success: #1fa971;
+            --danger: #e0473f;
+            --warning: #e6a13b;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+        }
+
+        body.dark {
+            --bg: #070c16;
+            --bg-tint: radial-gradient(1200px 600px at 15% -10%, rgba(47,111,237,.16), transparent 60%),
+                       radial-gradient(900px 500px at 110% 10%, rgba(76,201,240,.12), transparent 55%);
+            --card: #10182b;
+            --text: #eef1f8;
+            --text-secondary: #8b96ab;
+            --border: #1e2740;
+            --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+            --input-bg: #0c1424;
+            --tab-bg: #0c1424;
+            --modal-bg: #0e1626;
+            --hover: rgba(255,255,255,.04);
+        }
+
+        body {
+            background: var(--bg-tint), var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+            transition: background .3s, color .3s;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: .035;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+        }
+
+        .top-bar {
+            background: linear-gradient(160deg, var(--ink) 0%, var(--ink-2) 100%);
+            padding: 10px 14px 8px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 6px 24px rgba(6,11,22,.35);
+            border-bottom: 1px solid rgba(76,201,240,.18);
+        }
+
+        .top-bar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 520px;
+            margin: 0 auto;
+            gap: 6px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: radial-gradient(circle at 30% 20%, rgba(76,201,240,.25), transparent 60%), #0a1220;
+            box-shadow: 0 0 0 1px rgba(76,201,240,.25), 0 4px 14px rgba(47,111,237,.35);
+            flex-shrink: 0;
+        }
+        .logo-icon .mark {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4cc9f0;
+            font-weight: 900;
+            font-size: 16px;
+        }
+
+        .logo-text {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.05;
+        }
+        .logo-text .sub {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            color: var(--primary-2);
+            opacity: .85;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+        }
+
+        .top-btn {
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.06);
+            color: rgba(255,255,255,.65);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all .2s;
+            min-height: 36px;
+            min-width: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .top-btn svg { width: 17px; height: 17px; }
+        .top-btn:hover { background: rgba(255,255,255,.12); color: #fff; }
+        .top-btn.active {
+            background: linear-gradient(135deg, rgba(47,111,237,.35), rgba(76,201,240,.25));
+            color: #fff;
+            border-color: rgba(76,201,240,.4);
+        }
+
+        .content {
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 12px 14px 100px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .notification-container {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 92%;
+            max-width: 460px;
+        }
+
+        .notification {
+            background: var(--card);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            margin-bottom: 6px;
+            box-shadow: 0 10px 34px rgba(0,0,0,.18);
+            animation: slideDown .3s ease;
+            border-left: 3px solid var(--primary);
+            font-size: 13px;
+            color: var(--text);
+        }
+        .notification.success { border-left-color: var(--success); }
+        .notification.error { border-left-color: var(--danger); }
+        .notification.info { border-left-color: var(--primary-2); }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            transition: all .2s;
+            color: var(--text);
+            position: relative;
+        }
+        .card:active { transform: scale(0.99); }
+
+        .lot-card { cursor: pointer; }
+        .lot-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 14px; bottom: 14px;
+            width: 3px;
+            border-radius: 3px;
+            background: linear-gradient(180deg, var(--primary), var(--primary-2));
+            opacity: 0;
+            transition: opacity .2s;
+        }
+        .lot-card:hover::before { opacity: 1; }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 6px;
+            gap: 8px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            flex: 1;
+            letter-spacing: -0.1px;
+        }
+
+        .card-price {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--primary);
+            white-space: nowrap;
+            letter-spacing: -0.2px;
+        }
+
+        .card-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+        .category-chip {
+            display: inline-block;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 7px;
+            background: rgba(47,111,237,.10);
+            color: var(--primary);
+            margin-bottom: 6px;
+            letter-spacing: .2px;
+        }
+        body.dark .category-chip { background: rgba(76,201,240,.12); color: var(--primary-2); }
+
+        .card-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 4px 0 10px;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;  
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 11px;
+            border-top: 1px solid var(--border);
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .seller-info {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+            min-height: 36px;
+        }
+
+        .seller-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .seller-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .verified-badge { color: var(--primary-2); font-size: 12px; }
+
+        .seller-rating { font-size: 11px; color: var(--gold); font-weight: 600; }
+
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all .2s;
+            min-height: 40px;
+            min-width: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            letter-spacing: -.1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #1c56c9);
+            color: white;
+            box-shadow: 0 6px 16px rgba(47,111,237,.30);
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(47,111,237,.38); }
+        .btn-primary:active { transform: scale(0.96); }
+        .btn:disabled { opacity: .55; cursor: not-allowed; transform: none !important; }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 1.5px solid var(--border);
+        }
+        .btn-outline:hover { border-color: var(--primary); background: rgba(47,111,237,.05); }
+
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-sm { padding: 6px 14px; font-size: 12px; min-height: 34px; min-width: 34px; }
+        .btn-block { width: 100%; justify-content: center; }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--tab-bg);
+            padding: 4px;
+            border-radius: var(--radius-md);
+            margin-bottom: 10px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 8px 8px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all .2s;
+            min-height: 34px;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            background: var(--card);
+            color: var(--primary);
+            box-shadow: 0 2px 10px rgba(16,22,37,.08);
+        }
+        .tab:hover { color: var(--text); }
+
+        .search-row { display: flex; gap: 6px; margin-bottom: 10px; }
+
+        .search-input {
+            flex: 1;
+            padding: 11px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            min-height: 46px;
+            transition: border-color .2s;
+        }
+        .search-input:focus { border-color: var(--primary); }
+        .search-input::placeholder { color: var(--text-secondary); }
+
+        .sort-select {
+            padding: 11px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
+            min-height: 46px;
+            cursor: pointer;
+            min-width: 108px;
+        }
+
+        .category-scroll {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            margin-bottom: 10px;
+        }
+        .category-scroll::-webkit-scrollbar { display: none; }
+        .cat-pill {
+            flex-shrink: 0;
+            padding: 7px 13px;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            background: var(--card);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all .2s;
+        }
+        .cat-pill.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-2));
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .profile-hero {
+            background: linear-gradient(160deg, var(--ink) 0%, var(--ink-2) 100%);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .profile-hero::after {
+            content: '';
+            position: absolute;
+            right: -40px; top: -60px;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(76,201,240,.35), transparent 70%);
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin: 14px 0 4px;
+            position: relative;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 10px 6px;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 12px;
+            color: #fff;
+        }
+
+        .stat-number { font-size: 18px; font-weight: 800; letter-spacing: -.3px; }
+        .stat-label { font-size: 10.5px; color: rgba(255,255,255,.6); margin-top: 2px; }
+
+        .my-lot-item {
+            padding: 13px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text);
+            gap: 8px;
+        }
+        .my-lot-info { flex: 1; min-width: 0; }
+        .my-lot-title { font-weight: 700; font-size: 14px; word-break: break-word; }
+        .my-lot-price { font-size: 13px; color: var(--primary); font-weight: 700; margin-top: 1px; }
+
+        .my-lot-status { font-size: 10.5px; font-weight: 700; padding: 3px 10px; border-radius: 8px; display: inline-block; margin-top: 4px; }
+        .status-pending { background: #fdf1da; color: #b3720f; }
+        .status-approved { background: #dff5ea; color: #0f8a56; }
+        .status-sold { background: #eceef4; color: #5b6577; }
+        .status-rejected { background: #fbe4e2; color: #c23a32; }
+        .status-in_progress { background: #dce8fd; color: #2255c9; }
+        .status-disputed { background: #fde3e0; color: #c23a32; }
+        body.dark .status-pending { background: #2b2210; color: #e3b45a; }
+        body.dark .status-approved { background: #0d2a1f; color: #3ed693; }
+        body.dark .status-sold { background: #1c2438; color: #8b96ab; }
+        body.dark .status-rejected { background: #301616; color: #f0847d; }
+        body.dark .status-in_progress { background: #10203f; color: #6fa1ff; }
+        body.dark .status-disputed { background: #301616; color: #f0847d; }
+
+        .my-lot-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+
+        .empty-state { text-align: center; padding: 34px 16px; color: var(--text-secondary); }
+        .empty-state-icon { font-size: 34px; margin-bottom: 10px; opacity: .5; }
+        .empty-state-text { font-size: 14px; margin-bottom: 14px; }
+
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(6,11,22,.55);
+            backdrop-filter: blur(6px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overscroll-behavior: contain;
+        }
+        .modal-overlay.show { display: flex; }
+
+        .modal {
+            background: var(--modal-bg);
+            border-radius: 22px;
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: modalIn .25s ease;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        @keyframes modalIn {
+            from { transform: scale(0.94) translateY(14px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 10px; letter-spacing: -.2px; }
+        .modal-close { float: right; background: var(--hover); border: none; width: 32px; height: 32px; border-radius: 10px; font-size: 18px; color: var(--text-secondary); cursor: pointer; }
+
+        .lot-image { width: 100%; height: 180px; object-fit: cover; border-radius: 14px; margin-bottom: 10px; background: var(--input-bg); }
+        .lot-image-placeholder {
+            width: 100%; height: 180px; border-radius: 14px; margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--input-bg), var(--border));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 34px; color: var(--text-secondary);
+        }
+
+        .status-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 12px; background: var(--input-bg); border-radius: 12px;
+            margin: 8px 0 10px; font-size: 11.5px; flex-wrap: wrap; gap: 4px;
+        }
+        .status-step { display: flex; align-items: center; gap: 4px; color: var(--text-secondary); font-weight: 600; }
+        .status-step.active { color: var(--primary); }
+        .status-step.done { color: var(--success); }
+        .status-step .step-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); display: inline-block; }
+        .status-step.active .step-dot { background: var(--primary); }
+        .status-step.done .step-dot { background: var(--success); }
+
+        .escrow-timer {
+            font-size: 12px;
+            padding: 9px 12px;
+            border-radius: 12px;
+            background: rgba(230,161,59,.12);
+            color: var(--gold);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .info-banner {
+            font-size: 12px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: rgba(47,111,237,.08);
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        body.dark .info-banner { background: rgba(76,201,240,.10); color: var(--primary-2); }
+
+        .provider-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin: 4px 0 10px; }
+        .provider-option {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-md);
+            background: var(--input-bg); cursor: pointer; transition: all .2s; color: var(--text);
+        }
+        .provider-option:hover { border-color: var(--primary); }
+        .provider-option.selected { border-color: var(--primary); background: rgba(47,111,237,.08); }
+        .provider-option .p-name { font-weight: 700; font-size: 13.5px; display: flex; align-items: center; gap: 8px; }
+        .provider-option .p-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border); flex-shrink: 0; position: relative; }
+        .provider-option.selected .p-check { border-color: var(--primary); }
+        .provider-option.selected .p-check::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--primary); }
+
+        .chat-messages { max-height: 300px; overflow-y: auto; padding: 8px 0; }
+        .chat-msg { padding: 9px 13px; border-radius: 14px; margin-bottom: 6px; max-width: 85%; font-size: 13px; word-wrap: break-word; }
+        .chat-msg.mine { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; margin-left: auto; border-bottom-right-radius: 4px; }
+        .chat-msg.other { background: var(--input-bg); color: var(--text); border-bottom-left-radius: 4px; }
+        .chat-msg .time { font-size: 9px; opacity: 0.65; margin-top: 2px; display: block; }
+
+        .chat-input-row { display: flex; gap: 6px; margin-top: 8px; }
+        .chat-input { flex: 1; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-md); background: var(--input-bg); color: var(--text); font-size: 13px; outline: none; min-height: 46px; }
+        .chat-input:focus { border-color: var(--primary); }
+
+        .fav-btn { background: none; border: none; font-size: 20px; cursor: pointer; transition: all .2s; color: var(--text-secondary); min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+        .fav-btn.active { color: var(--gold); }
+
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--border); cursor: pointer; min-height: 52px; }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-item:hover { background: var(--hover); margin: 0 -8px; padding: 13px 8px; border-radius: 8px; }
+
+        .toggle { width: 44px; height: 24px; background: #cbd2e0; border-radius: 12px; cursor: pointer; position: relative; transition: all .3s; flex-shrink: 0; }
+        .toggle.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
+        .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: all .3s; box-shadow: 0 2px 4px rgba(0,0,0,.2); }
+        .toggle.active::after { left: 22px; }
+
+        .lang-selector { display: flex; gap: 8px; margin-top: 4px; }
+        .lang-option { padding: 7px 16px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--input-bg); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 700; transition: all .2s; min-height: 40px; }
+        .lang-option:hover { border-color: var(--primary); }
+        .lang-option.active-lang { border-color: var(--primary); background: rgba(47,111,237,.08); color: var(--primary); }
+
+        .tx-item { display: flex; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 8px; }
+        .tx-item:last-child { border-bottom: none; }
+        .tx-amount.positive { color: var(--success); font-weight: 700; }
+        .tx-amount.negative { color: var(--danger); font-weight: 700; }
+
+        .withdraw-item { display: flex; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 8px; align-items: center; }
+        .withdraw-item:last-child { border-bottom: none; }
+
+        .hidden { display: none !important; }
+
+        .badge-level { font-size: 10px; padding: 3px 9px; border-radius: 8px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; margin-left: 4px; font-weight: 700; }
+
+        .spinner { width: 22px; height: 22px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; margin: 18px auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .upload-progress { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; margin-top: 6px; }
+        .upload-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--primary-2)); transition: width .2s; }
+
+        .section-title { font-weight: 800; margin-bottom: 12px; font-size: 15px; display: flex; align-items: center; gap: 6px; letter-spacing: -.2px; }
+
+        @media (max-width: 480px) {
+            .top-bar { padding: 8px 10px 6px; }
+            .logo-text { font-size: 14px; }
+            .logo-icon { width: 28px; height: 28px; }
+            .card { padding: 13px; }
+            .stat-number { font-size: 16px; }
+            .btn { padding: 7px 14px; font-size: 12px; min-height: 36px; min-width: 36px; }
+        }
+
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd2e0; border-radius: 3px; }
+        body.dark ::-webkit-scrollbar-thumb { background: #1e2740; }
+
+        .skeleton { background: linear-gradient(90deg, var(--input-bg) 25%, var(--border) 50%, var(--input-bg) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 12px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="logo-section" onclick="switchTab('catalog')">
+                <div class="logo-icon"><span class="mark">H</span></div>
+                <div class="logo-text">HoldDeal<span class="sub">escrow market</span></div>
+            </div>
+            <div class="top-actions">
+                <button class="top-btn active" onclick="switchTab('catalog')" id="tabCatalogBtn" title="Каталог">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                </button>
+                <button class="top-btn" onclick="switchTab('profile')" id="tabProfileBtn" title="Профиль">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+                </button>
+                <button class="top-btn" onclick="switchTab('my_lots')" id="tabMyLotsBtn" title="Мои объявления">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                </button>
+                <button class="top-btn" onclick="switchTab('favorites')" id="tabFavBtn" title="Избранное">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9.5-9C.7 8.4 3 5 6.5 5c1.9 0 3.4 1 5.5 3 2.1-2 3.6-3 5.5-3C21 5 23.3 8.4 21.5 12 19 16.6 12 21 12 21z"/></svg>
+                </button>
+                <button class="top-btn" onclick="switchTab('settings')" id="tabSettingsBtn" title="Настройки">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.4 1z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <div class="content">
+
+        <!-- ===== КАТАЛОГ ===== -->
+        <div id="tabCatalog" class="tab-content">
+            <div class="search-row">
+                <input class="search-input" id="searchInput" placeholder="Поиск услуг..." oninput="handleSearch(this.value)" data-key="search_placeholder">
+                <select class="sort-select" id="sortSelect" onchange="handleSort(this.value)">
+                    <option value="newest" data-key="sort_newest">Новые</option>
+                    <option value="price_asc" data-key="sort_price_asc">Дешевле</option>
+                    <option value="price_desc" data-key="sort_price_desc">Дороже</option>
+                    <option value="rating" data-key="sort_rating">По рейтингу</option>
+                </select>
+            </div>
+
+            <div class="category-scroll" id="categoryScroll"></div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="filterLots('all')" data-key="filter_all">Все</button>
+                <button class="tab" onclick="filterLots('low')" data-key="filter_low">До 5000 ₽</button>
+                <button class="tab" onclick="filterLots('high')" data-key="filter_high">От 5000 ₽</button>
+            </div>
+
+            <div id="lotList"></div>
+            <div id="loadingMore" class="hidden"><div class="spinner"></div></div>
+        </div>
+
+        <!-- ===== ПРОФИЛЬ ===== -->
+        <div id="tabProfile" class="tab-content hidden">
+            <div class="profile-hero">
+                <div style="display:flex;align-items:center;gap:12px;position:relative;">
+                    <div class="seller-avatar" style="width:56px;height:56px;font-size:22px;border-radius:16px;" id="profileAvatar">U</div>
+                    <div style="flex:1;min-width:120px;">
+                        <div style="font-size:18px;font-weight:800;" id="profileName">Пользователь</div>
+                        <div style="color:rgba(255,255,255,.6);font-size:13px;" id="profileUsername">@username</div>
+                        <div style="margin-top:3px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+                            <span id="profileRating" style="color:var(--gold);font-weight:700;font-size:13px;">4.7</span>
+                            <span style="color:rgba(255,255,255,.55);font-size:12px;" id="profileReviews">0 отзывов</span>
+                            <span class="badge-level" id="profileLevel">Новичок</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-stats">
+                    <div class="stat-box"><div class="stat-number" id="profileBalance">0 ₽</div><div class="stat-label" data-key="balance">Баланс</div></div>
+                    <div class="stat-box"><div class="stat-number" id="profileLotsCount">0</div><div class="stat-label" data-key="ads">Объявлений</div></div>
+                    <div class="stat-box"><div class="stat-number" id="profileDealsCount">0</div><div class="stat-label" data-key="deals">Сделок</div></div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-block" onclick="openCreateLot()" style="margin-bottom:8px;" data-key="create_ad">Создать объявление</button>
+            <div style="display:flex;gap:6px;margin-bottom:12px;">
+                <button class="btn btn-outline btn-block" onclick="openTopUpModal()" data-key="topup">Пополнить баланс</button>
+                <button class="btn btn-outline btn-block" onclick="openWithdrawModal()" data-key="withdraw">Вывести средства</button>
+            </div>
+
+            <div class="card">
+                <div class="section-title" data-key="recent_reviews">Последние отзывы</div>
+                <div id="reviewsList">
+                    <div class="empty-state-text" style="text-align:center;padding:12px 0;color:var(--text-secondary);">У вас пока нет отзывов</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title" data-key="withdrawals_title">Заявки на вывод</div>
+                <div id="withdrawalsList">
+                    <div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text" data-key="no_withdrawals">Заявок на вывод нет</div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title" data-key="transaction_history">История сделок</div>
+                <div id="historyList">
+                    <div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text" data-key="no_history">История пуста</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== МОИ ОБЪЯВЛЕНИЯ ===== -->
+        <div id="tabMyLots" class="tab-content hidden">
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
+                    <div style="font-weight:800;" data-key="my_ads">Мои объявления</div>
+                    <button class="btn btn-primary btn-sm" onclick="openCreateLot()" data-key="create">+ Создать</button>
+                </div>
+                <div id="myLotsList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">◎</div>
+                        <div class="empty-state-text" data-key="no_ads">У вас пока нет объявлений</div>
+                        <button class="btn btn-primary" onclick="openCreateLot()" data-key="create_first">Создать первое</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ИЗБРАННОЕ ===== -->
+        <div id="tabFavorites" class="tab-content hidden">
+            <div class="card">
+                <div style="font-weight:800;margin-bottom:12px;" data-key="favorites">Избранное</div>
+                <div id="favoritesList">
+                    <div class="empty-state"><div class="empty-state-icon">☆</div><div class="empty-state-text" data-key="no_favorites">Нет избранных объявлений</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== НАСТРОЙКИ ===== -->
+        <div id="tabSettings" class="tab-content hidden">
+            <div class="card">
+                <div style="font-weight:800;margin-bottom:12px;" data-key="settings">Настройки</div>
+
+                <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:8px;">
+                    <span data-key="language">Язык / Language</span>
+                    <div class="lang-selector">
+                        <button class="lang-option active-lang" onclick="switchLang('ru')" id="langRu">🇷🇺 Русский</button>
+                        <button class="lang-option" onclick="switchLang('en')" id="langEn">🇬🇧 English</button>
+                    </div>
+                </div>
+
+                <div class="setting-item"><span data-key="dark_theme">Тёмная тема</span><div class="toggle" id="darkToggle" onclick="toggleTheme()"></div></div>
+                <div class="setting-item"><span data-key="notify_purchase">Уведомления о покупках</span><div class="toggle active" id="notifyPurchase" onclick="toggleSetting('notifyPurchase')"></div></div>
+                <div class="setting-item"><span data-key="notify_messages">Уведомления о сообщениях</span><div class="toggle active" id="notifyMessages" onclick="toggleSetting('notifyMessages')"></div></div>
+                <div class="setting-item"><span data-key="notify_reviews">Уведомления об отзывах</span><div class="toggle active" id="notifyReviews" onclick="toggleSetting('notifyReviews')"></div></div>
+                <div class="setting-item"><span data-key="sound">Звук уведомлений</span><div class="toggle active" id="soundToggle" onclick="toggleSetting('soundToggle')"></div></div>
+
+                <div style="margin-top:14px;text-align:center;font-size:11.5px;color:var(--text-secondary);">HoldDeal v5.0</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== МОДАЛКИ ===== -->
+    <div class="modal-overlay" id="lotModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div id="modalImageContainer"></div>
+            <span class="category-chip" id="modalCategory" style="display:none;"></span>
+            <div class="modal-title" id="modalTitle">Название</div>
+            <div style="font-size:22px;font-weight:800;color:var(--primary);margin:4px 0;" id="modalPrice">0 ₽</div>
+            <div style="color:var(--text-secondary);font-size:13px;margin-bottom:4px;" id="modalSeller">Продавец: @username</div>
+            <div id="modalEscrowTimer"></div>
+            <div id="modalStatusBar"></div>
+            <div style="color:var(--text-secondary);font-size:14px;line-height:1.6;margin-bottom:12px;" id="modalDesc">Описание</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="btn btn-primary" style="flex:1;" onclick="buyFromModal()" data-key="buy" id="modalBuyBtn">Купить</button>
+                <button class="btn btn-outline" onclick="toggleFavorite(selectedLotId)">☆</button>
+                <button class="btn btn-outline" onclick="openChatFromModal()">💬</button>
+                <button class="btn btn-outline" onclick="closeModal()" data-key="close">Закрыть</button>
+            </div>
+            <button class="btn btn-danger btn-block hidden" style="margin-top:6px;" id="modalDisputeBtn" onclick="openDisputeFromModal()" data-key="open_dispute">Открыть спор</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="createLotModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeCreateLotModal()">✕</button>
+            <div class="modal-title" id="createLotTitle">Создать объявление</div>
+            <input class="search-input" id="lotTitleInput" maxlength="80" placeholder="Название товара/услуги..." style="margin-bottom:8px;" data-key="lot_title_placeholder">
+            <textarea class="search-input" id="lotDescInput" maxlength="600" placeholder="Подробное описание..." style="min-height:80px;margin-bottom:8px;resize:vertical;" data-key="lot_desc_placeholder"></textarea>
+            <input class="search-input" id="lotPriceInput" placeholder="Цена в рублях..." type="number" min="1" style="margin-bottom:4px;" oninput="updateCommissionHint()" data-key="lot_price_placeholder">
+            <div id="commissionHint" style="font-size:11.5px;color:var(--text-secondary);margin-bottom:8px;"></div>
+            <select class="search-input" id="lotCategoryInput" style="margin-bottom:8px;"></select>
+            <div style="margin-bottom:10px;">
+                <label style="font-size:13px;color:var(--text-secondary);display:block;margin-bottom:4px;" data-key="lot_photo">Фото (необязательно)</label>
+                <input type="file" id="lotPhotoInput" accept="image/*" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:10px;background:var(--input-bg);color:var(--text);" onchange="onPhotoSelected()">
+                <div class="upload-progress hidden" id="uploadProgressWrap"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
+            </div>
+            <div style="display:flex;gap:6px;">
+                <button class="btn btn-primary btn-block" onclick="submitLot()" id="submitLotBtn" data-key="submit">Опубликовать</button>
+                <button class="btn btn-outline" onclick="closeCreateLotModal()" data-key="cancel">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal" style="max-width:320px;">
+            <div class="modal-title" id="confirmTitle">Подтверждение</div>
+            <div style="margin-bottom:16px;color:var(--text-secondary);" id="confirmMessage">Вы уверены?</div>
+            <div style="display:flex;gap:6px;">
+                <button class="btn btn-primary" style="flex:1;" onclick="handleConfirmYes()" data-key="yes">Да</button>
+                <button class="btn btn-outline" onclick="closeConfirmModal()" data-key="no">Нет</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="chatModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeChatModal()">✕</button>
+            <div class="modal-title" id="chatTitle">Чат с продавцом</div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-msg other">Здравствуйте! Интересуюсь вашим предложением.<span class="time">12:30</span></div>
+                <div class="chat-msg mine">Добрый день! Да, всё актуально. Можем обсудить детали.<span class="time">12:32</span></div>
+            </div>
+            <div class="chat-input-row">
+                <input class="chat-input" id="chatInput" maxlength="500" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendMessage()" data-key="chat_placeholder">
+                <button class="btn btn-primary" onclick="sendMessage()" data-key="send">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ПОПОЛНЕНИЕ БАЛАНСА (сумма -> провайдер) ===== -->
+    <div class="modal-overlay" id="topUpModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeTopUpModal()">✕</button>
+            <div class="modal-title" data-key="topup">Пополнить баланс</div>
+            <div id="topUpStep1">
+                <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;" data-key="topup_min_hint">Минимальная сумма пополнения — 50 ₽</div>
+                <input class="search-input" id="topUpAmountInput" type="number" min="50" placeholder="Сумма в рублях..." style="margin-bottom:12px;" data-key="topup_amount_placeholder">
+                <button class="btn btn-primary btn-block" onclick="goToTopUpProvider()" data-key="continue">Продолжить</button>
+            </div>
+            <div id="topUpStep2" class="hidden">
+                <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;" id="topUpAmountSummary"></div>
+                <div class="provider-grid" id="topUpProviderGrid"></div>
+                <div style="display:flex;gap:6px;">
+                    <button class="btn btn-primary btn-block" onclick="submitTopUp()" data-key="pay" id="topUpSubmitBtn" disabled>Оплатить</button>
+                    <button class="btn btn-outline" onclick="backToTopUpAmount()" data-key="back">Назад</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ВЫВОД СРЕДСТВ ===== -->
+    <div class="modal-overlay" id="withdrawModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeWithdrawModal()">✕</button>
+            <div class="modal-title" data-key="withdraw">Вывести средства</div>
+            <div id="withdrawStep1">
+                <div class="info-banner" id="withdrawBalanceHint"></div>
+                <input class="search-input" id="withdrawAmountInput" type="number" min="500" placeholder="Сумма к выводу..." style="margin-bottom:12px;" data-key="withdraw_amount_placeholder">
+                <button class="btn btn-primary btn-block" onclick="goToWithdrawProvider()" data-key="continue">Продолжить</button>
+            </div>
+            <div id="withdrawStep2" class="hidden">
+                <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;" id="withdrawAmountSummary"></div>
+                <div class="provider-grid" id="withdrawProviderGrid"></div>
+                <div id="withdrawDestinationWrap" class="hidden" style="margin-bottom:10px;">
+                    <label style="font-size:12.5px;color:var(--text-secondary);display:block;margin-bottom:4px;" id="withdrawDestinationLabel"></label>
+                    <input class="search-input" id="withdrawDestinationInput" placeholder="">
+                </div>
+                <div style="display:flex;gap:6px;">
+                    <button class="btn btn-primary btn-block" onclick="submitWithdraw()" data-key="submit_withdraw" id="withdrawSubmitBtn">Отправить заявку</button>
+                    <button class="btn btn-outline" onclick="backToWithdrawAmount()" data-key="back">Назад</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== СПОР ===== -->
+    <div class="modal-overlay" id="disputeModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeDisputeModal()">✕</button>
+            <div class="modal-title" data-key="open_dispute">Открыть спор</div>
+            <div class="info-banner" data-key="dispute_hint">Модератор рассмотрит обращение и примет решение — деньги вернутся покупателю, будут выплачены продавцу или сделка будет отменена.</div>
+            <textarea class="search-input" id="disputeReasonInput" maxlength="500" placeholder="Опишите, что произошло..." style="min-height:90px;margin-bottom:10px;resize:vertical;" data-key="dispute_reason_placeholder"></textarea>
+            <div style="display:flex;gap:6px;">
+                <button class="btn btn-danger btn-block" onclick="submitDispute()" data-key="submit_dispute">Отправить</button>
+                <button class="btn btn-outline" onclick="closeDisputeModal()" data-key="cancel">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // БЕЗОПАСНОСТЬ: экранирование пользовательского ввода (XSS)
+        // ============================================================
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ============================================================
+        // 1. TELEGRAM WEBAPP: реальный / эмуляция для браузера
+        // ============================================================
+        const isTelegram = typeof window.Telegram !== 'undefined' && window.Telegram.WebApp && window.Telegram.WebApp.initData;
+
+        if (!isTelegram) {
+            window.Telegram = {
+                WebApp: {
+                    ready: function() { console.log('WebApp ready (emulated)'); },
+                    expand: function() { console.log('WebApp expand (emulated)'); },
+                    initData: '',
+                    HapticFeedback: { impactOccurred: function(){}, notificationOccurred: function(){} },
+                    sendData: function(data) {
+                        console.log('SendData:', data);
+                        showNotification('Локальный демо-режим: действие обработано в браузере', 'info');
+                        try { handleLocalAction(JSON.parse(data)); } catch (e) {}
+                    },
+                    initDataUnsafe: {
+                        user: { id: 12345, first_name: 'Тестовый', last_name: 'Пользователь', username: 'test_user', language_code: 'ru' }
+                    },
+                    onEvent: function(event, callback) {
+                        if (!window._tgEvents) window._tgEvents = {};
+                        window._tgEvents[event] = callback;
+                    }
+                }
+            };
+            console.log('Telegram WebApp эмулирован для браузера');
+        }
+
+        function emitTgEvent(type, data) {
+            if (window._tgEvents && window._tgEvents[type]) window._tgEvents[type](data);
+        }
+
+        // ============================================================
+        // 2. ИНИЦИАЛИЗАЦИЯ
+        // ============================================================
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // ВАЖНО: на бэкенде каждый запрос нужно проверять через tg.initData
+        // (HMAC-подпись initData секретом бота) — фронтовый user.id доверять нельзя.
+        const BACKEND_API_URL = ''; // укажи свой домен бэкенда, напр. 'https://api.yourdomain.com'
+
+        const userId = tg.initDataUnsafe.user?.id || 12345;
+        const userData = tg.initDataUnsafe.user || { id: 12345, first_name: 'Тестовый', username: 'test_user' };
+
+        // Тир комиссии — держим в одном месте, зеркалит core.py: <5000₽ — 7%, >=5000₽ — 5%
+        const COMMISSION_TIER_THRESHOLD = 5000;
+        const COMMISSION_LOW = 0.07;
+        const COMMISSION_HIGH = 0.05;
+        function computeCommission(price) {
+            if (!price || price <= 0) return 0;
+            return Math.round(price * (price < COMMISSION_TIER_THRESHOLD ? COMMISSION_LOW : COMMISSION_HIGH));
+        }
+        const MIN_WITHDRAWAL_RUB = 500;
+        const MIN_TOPUP_RUB = 50;
+        const ESCROW_HOURS = 48;
+
+        let currentLang = 'ru';
+        let allLots = [];
+        let myLots = [];
+        let favorites = [];
+        let userReviews = [];
+        let transactions = [];
+        let withdrawals = [];
+        let userBalance = 0;
+        let currentFilter = 'all';
+        let currentSort = 'newest';
+        let currentCategory = 'all';
+        let searchQuery = '';
+        let selectedLotId = null;
+        let currentChatLotId = null;
+        let editingLotId = null;
+        let confirmCallback = null;
+        let isLoading = false;
+        let visibleCount = 0;
+        const PAGE_SIZE = 20;
+
+        // Загруженное через /webapp/upload_photo фото текущего черновика лота (URL, не base64)
+        let pendingPhotoUrl = null;
+
+        // Состояние мастеров пополнения/вывода
+        let topUpAmount = 0;
+        let topUpProvider = null;
+        let withdrawAmount = 0;
+        let withdrawProvider = null;
+
+        const CATEGORIES = {
+            ru: { all: 'Все категории', dev: 'Разработка', design: 'Дизайн', marketing: 'Маркетинг', copy: 'Копирайтинг', other: 'Другое' },
+            en: { all: 'All categories', dev: 'Development', design: 'Design', marketing: 'Marketing', copy: 'Copywriting', other: 'Other' }
+        };
+
+        const TOPUP_PROVIDERS = {
+            ru: [
+                { id: 'cryptobot', name: '💎 CryptoBot' },
+                { id: 'xrocket', name: '🚀 xRocket' },
+                { id: 'stars', name: '⭐ Telegram Stars' }
+            ],
+            en: [
+                { id: 'cryptobot', name: '💎 CryptoBot' },
+                { id: 'xrocket', name: '🚀 xRocket' },
+                { id: 'stars', name: '⭐ Telegram Stars' }
+            ]
+        };
+        const WITHDRAW_PROVIDERS = {
+            ru: [
+                { id: 'cryptobot', name: '💎 CryptoBot' },
+                { id: 'xrocket', name: '🚀 xRocket (TON)' }
+            ],
+            en: [
+                { id: 'cryptobot', name: '💎 CryptoBot' },
+                { id: 'xrocket', name: '🚀 xRocket (TON)' }
+            ]
+        };
+
+        function rubToStars(amountRub) {
+            // Грубая оценка курса — точный расчёт всегда делает бэкенд (payments/stars.py)
+            return Math.max(1, Math.round(amountRub * 2));
+        }
+
+        // ============================================================
+        // 3. ПЕРЕВОДЫ
+        // ============================================================
+        const langData = {
+            ru: {
+                filter_all: 'Все', filter_low: 'До 5000 ₽', filter_high: 'От 5000 ₽',
+                balance: 'Баланс', ads: 'Объявлений', deals: 'Сделок',
+                create_ad: 'Создать объявление', topup: 'Пополнить баланс', withdraw: 'Вывести средства',
+                recent_reviews: 'Последние отзывы', transaction_history: 'История сделок',
+                my_ads: 'Мои объявления', create: '+ Создать', no_ads: 'У вас пока нет объявлений',
+                create_first: 'Создать первое', no_history: 'История пуста',
+                favorites: 'Избранное', no_favorites: 'Нет избранных объявлений',
+                settings: 'Настройки', language: 'Язык / Language', dark_theme: 'Тёмная тема',
+                notify_purchase: 'Уведомления о покупках', notify_messages: 'Уведомления о сообщениях',
+                notify_reviews: 'Уведомления об отзывах', sound: 'Звук уведомлений',
+                buy: 'Купить', close: 'Закрыть', send: '➤',
+                pending: 'На модерации', approved: 'Активно', sold: 'Продано', rejected: 'Отклонено', in_progress: 'В процессе', disputed: 'Спор',
+                no_reviews: 'У вас пока нет отзывов', purchase: 'Покупка', sale: 'Продажа',
+                search_placeholder: 'Поиск услуг...', sort_newest: 'Новые', sort_price_asc: 'Дешевле', sort_price_desc: 'Дороже', sort_rating: 'По рейтингу',
+                lot_title_placeholder: 'Название товара/услуги...', lot_desc_placeholder: 'Подробное описание...', lot_price_placeholder: 'Цена в рублях...',
+                lot_photo: 'Фото (необязательно)', submit: 'Опубликовать', cancel: 'Отмена', yes: 'Да', no: 'Нет',
+                edit: 'Редактировать', delete: 'Удалить', share: 'Поделиться',
+                confirm_delete: 'Удалить это объявление? Отменить будет нельзя.', confirm_unfavorite: 'Убрать из избранного?',
+                level_newbie: 'Новичок', level_master: 'Мастер', level_expert: 'Эксперт',
+                status_waiting: 'Ожидает подтверждения', status_in_progress: 'В процессе', status_completed: 'Завершено',
+                no_photo: 'Нет фото', load_more: 'Показать ещё', escrow_left: 'Осталось на подтверждение',
+                escrow_expired: 'Срок подтверждения истёк — можно открыть спор', chat_placeholder: 'Сообщение...',
+                commission_hint: 'Комиссия площадки', topup_min_hint: 'Минимальная сумма пополнения — 50 ₽',
+                topup_amount_placeholder: 'Сумма в рублях...', continue: 'Продолжить', pay: 'Оплатить', back: 'Назад',
+                choose_provider: 'Выберите способ',
+                withdraw_amount_placeholder: `Сумма к выводу (мин. ${MIN_WITHDRAWAL_RUB} ₽)...`,
+                submit_withdraw: 'Отправить заявку', withdraw_dest_cryptobot: 'Ваш Telegram user_id или @username в CryptoBot',
+                withdraw_dest_xrocket: 'TON-адрес кошелька для вывода',
+                open_dispute: 'Открыть спор', dispute_hint: 'Модератор рассмотрит обращение и примет решение — деньги вернутся покупателю, будут выплачены продавцу или сделка будет отменена.',
+                dispute_reason_placeholder: 'Опишите, что произошло...', submit_dispute: 'Отправить',
+                withdrawals_title: 'Заявки на вывод', no_withdrawals: 'Заявок на вывод нет',
+                wd_pending: 'В обработке', wd_sent: 'Выполнено', wd_rejected: 'Отклонено', wd_failed: 'Ошибка',
+                insufficient_balance: 'Недостаточно средств на балансе', min_amount_error: 'Сумма меньше минимальной',
+                topup_created: 'Счёт на пополнение создан, следуйте инструкциям бота', withdraw_created: 'Заявка на вывод создана и отправлена на подтверждение',
+                dispute_created: 'Спор открыт, модератор рассмотрит обращение', enter_reason: 'Опишите причину спора'
+            },
+            en: {
+                filter_all: 'All', filter_low: 'Up to 5000 ₽', filter_high: 'From 5000 ₽',
+                balance: 'Balance', ads: 'Ads', deals: 'Deals',
+                create_ad: 'Create ad', topup: 'Top up', withdraw: 'Withdraw funds',
+                recent_reviews: 'Recent reviews', transaction_history: 'Transaction history',
+                my_ads: 'My ads', create: '+ Create', no_ads: 'No ads yet',
+                create_first: 'Create first', no_history: 'History is empty',
+                favorites: 'Favorites', no_favorites: 'No favorites',
+                settings: 'Settings', language: 'Language', dark_theme: 'Dark theme',
+                notify_purchase: 'Purchase notifications', notify_messages: 'Message notifications',
+                notify_reviews: 'Review notifications', sound: 'Sound notifications',
+                buy: 'Buy', close: 'Close', send: '➤',
+                pending: 'Pending', approved: 'Active', sold: 'Sold', rejected: 'Rejected', in_progress: 'In progress', disputed: 'Disputed',
+                no_reviews: 'No reviews yet', purchase: 'Purchase', sale: 'Sale',
+                search_placeholder: 'Search services...', sort_newest: 'Newest', sort_price_asc: 'Price: Low to High', sort_price_desc: 'Price: High to Low', sort_rating: 'By rating',
+                lot_title_placeholder: 'Product/service name...', lot_desc_placeholder: 'Detailed description...', lot_price_placeholder: 'Price in RUB...',
+                lot_photo: 'Photo (optional)', submit: 'Publish', cancel: 'Cancel', yes: 'Yes', no: 'No',
+                edit: 'Edit', delete: 'Delete', share: 'Share',
+                confirm_delete: 'Delete this ad? This cannot be undone.', confirm_unfavorite: 'Remove from favorites?',
+                level_newbie: 'Newbie', level_master: 'Master', level_expert: 'Expert',
+                status_waiting: 'Waiting for confirmation', status_in_progress: 'In progress', status_completed: 'Completed',
+                no_photo: 'No photo', load_more: 'Load more', escrow_left: 'Time left to confirm',
+                escrow_expired: 'Confirmation window expired — you can open a dispute', chat_placeholder: 'Message...',
+                commission_hint: 'Platform commission', topup_min_hint: 'Minimum top-up amount — 50 ₽',
+                topup_amount_placeholder: 'Amount in RUB...', continue: 'Continue', pay: 'Pay', back: 'Back',
+                choose_provider: 'Choose a method',
+                withdraw_amount_placeholder: `Amount to withdraw (min. ${MIN_WITHDRAWAL_RUB} ₽)...`,
+                submit_withdraw: 'Submit request', withdraw_dest_cryptobot: 'Your Telegram user_id or @username in CryptoBot',
+                withdraw_dest_xrocket: 'TON wallet address for withdrawal',
+                open_dispute: 'Open dispute', dispute_hint: 'A moderator will review the case and decide — funds go back to the buyer, get paid to the seller, or the deal is cancelled.',
+                dispute_reason_placeholder: 'Describe what happened...', submit_dispute: 'Submit',
+                withdrawals_title: 'Withdrawal requests', no_withdrawals: 'No withdrawal requests',
+                wd_pending: 'Pending', wd_sent: 'Sent', wd_rejected: 'Rejected', wd_failed: 'Failed',
+                insufficient_balance: 'Insufficient balance', min_amount_error: 'Amount is below the minimum',
+                topup_created: 'Top-up invoice created, follow the bot instructions', withdraw_created: 'Withdrawal request created and sent for confirmation',
+                dispute_created: 'Dispute opened, a moderator will review it', enter_reason: 'Describe the reason for the dispute'
+            }
+        };
+        function t(key) { return langData[currentLang]?.[key] || key; }
+
+        // ============================================================
+        // 4. ЯЗЫК
+        // ============================================================
+        function switchLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-option').forEach(el => el.classList.toggle('active-lang', el.id === 'lang' + lang.charAt(0).toUpperCase() + lang.slice(1)));
+            updateAllTexts();
+            renderCategoryScroll();
+            renderAll();
+            showNotification(lang === 'ru' ? '🇷🇺 Русский' : '🇬🇧 English', 'info');
+            localStorage.setItem('lang', lang);
+        }
+
+        function updateAllTexts() {
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.dataset.key;
+                if (!key || langData[currentLang]?.[key] === undefined) return;
+                if ((el.tagName === 'INPUT' && el.type !== 'file') || el.tagName === 'TEXTAREA') {
+                    el.placeholder = t(key);
+                } else if (el.tagName === 'INPUT' && el.type === 'file') {
+                    // skip
+                } else {
+                    el.textContent = t(key);
+                }
+            });
+        }
+
+        // ============================================================
+        // 5. ДАННЫЕ (демо)
+        // ============================================================
+        const mockLots = [
+            { id: 1, title: 'Разработка сайта на React', price: 15000, category: 'dev', description: 'Сделаю лендинг или интернет-магазин под ключ. Адаптив, анимации, оптимизация.', seller: 'webdev_pro', verified: true, rating: 4.8, reviews: 23, status: 'approved', image: null, createdAt: '2026-08-16T10:00:00' },
+            { id: 2, title: 'Дизайн логотипа', price: 5000, category: 'design', description: 'Разработка уникального логотипа с неймингом. 3 варианта, 5 правок.', seller: 'design_master', verified: true, rating: 4.9, reviews: 45, status: 'approved', image: null, createdAt: '2026-08-15T14:30:00' },
+            { id: 3, title: 'SEO оптимизация сайта', price: 12000, category: 'marketing', description: 'Полный аудит, сбор семантики, оптимизация контента, вывод в топ-10.', seller: 'seo_expert', verified: false, rating: 4.7, reviews: 31, status: 'approved', image: null, createdAt: '2026-08-14T09:15:00' },
+            { id: 4, title: 'Настройка контекстной рекламы', price: 8000, category: 'marketing', description: 'Настройка Яндекс.Директ и Google Ads. Оптимизация бюджета, подбор ключей.', seller: 'ppc_pro', verified: false, rating: 4.6, reviews: 18, status: 'approved', image: null, createdAt: '2026-08-13T16:45:00' },
+            { id: 5, title: 'Копирайтинг для блога', price: 3000, category: 'copy', description: 'Написание экспертных статей для блога. Тематика: IT, бизнес, маркетинг.', seller: 'copywriter_io', verified: false, rating: 4.5, reviews: 29, status: 'approved', image: null, createdAt: '2026-08-12T11:20:00' },
+        ];
+        const mockMyLots = [
+            { id: 101, title: 'Веб-разработка на заказ', price: 20000, category: 'dev', status: 'approved', description: 'Создам сайт любой сложности...', image: null, createdAt: '2026-08-16T08:00:00' },
+            { id: 102, title: 'Аудит сайта', price: 7000, category: 'marketing', status: 'pending', description: 'Полный технический аудит...', image: null, createdAt: '2026-08-15T12:00:00' },
+            { id: 103, title: 'Интеграция с CRM', price: 15000, category: 'dev', status: 'in_progress', description: 'Настройка интеграции...', image: null, createdAt: '2026-08-14T10:00:00' },
+        ];
+        const mockFavorites = [1, 3];
+        const mockReviews = [
+            { from: 'client1', rating: 5, comment: 'Отличная работа!', date: '2026-08-15' },
+            { from: 'client2', rating: 4, comment: 'Быстро, но можно лучше', date: '2026-08-14' },
+        ];
+        const mockTransactions = [
+            { id: 1, title: 'Разработка сайта', amount: 15000, type: 'Покупка', date: '2026-08-16', status: 'completed' },
+            { id: 2, title: 'Дизайн логотипа', amount: 5000, type: 'Продажа', date: '2026-08-15', status: 'completed' },
+            { id: 3, title: 'SEO оптимизация', amount: 12000, type: 'Покупка', date: '2026-08-14', status: 'pending' },
+        ];
+        const mockWithdrawals = [];
+        const mockBalance = 42500;
+
+        function initData() {
+            const saved = localStorage.getItem('holddeal_data');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    allLots = data.lots || mockLots;
+                    myLots = data.myLots || mockMyLots;
+                    favorites = data.favorites || mockFavorites;
+                    userReviews = data.reviews || mockReviews;
+                    transactions = data.transactions || mockTransactions;
+                    withdrawals = data.withdrawals || mockWithdrawals;
+                    userBalance = data.balance ?? mockBalance;
+                    return;
+                } catch (e) {}
+            }
+            allLots = [...mockLots]; myLots = [...mockMyLots]; favorites = [...mockFavorites];
+            userReviews = [...mockReviews]; transactions = [...mockTransactions];
+            withdrawals = [...mockWithdrawals]; userBalance = mockBalance;
+            saveData();
+        }
+
+        function saveData() {
+            localStorage.setItem('holddeal_data', JSON.stringify({ lots: allLots, myLots, favorites, reviews: userReviews, transactions, withdrawals, balance: userBalance }));
+        }
+
+        // ============================================================
+        // 6. ЛОКАЛЬНАЯ ОБРАБОТКА ДЕЙСТВИЙ (демо-режим в браузере)
+        // ============================================================
+        function handleLocalAction(data) {
+            const action = data.action;
+            switch (action) {
+                case 'buy': {
+                    const lot = allLots.find(l => l.id === data.lot_id);
+                    if (lot) { lot.status = 'in_progress'; lot.dealStartedAt = new Date().toISOString(); saveData(); renderAll(); showNotification(`Куплено: ${lot.title}`, 'success'); }
+                    break;
+                }
+                case 'create_lot': {
+                    const newLot = {
+                        id: Date.now(), title: data.title || 'Новое объявление', description: data.description || '',
+                        price: data.price || 1000, category: data.category || 'other', seller: userData.username || 'user',
+                        verified: false, rating: 0, reviews: 0, status: 'pending', image: data.image || null, createdAt: new Date().toISOString()
+                    };
+                    allLots.unshift(newLot); myLots.unshift(newLot); saveData(); renderAll();
+                    showNotification('Новое объявление создано!', 'success');
+                    break;
+                }
+                case 'update_lot': {
+                    const lot = myLots.find(l => l.id === data.lot_id);
+                    if (lot) {
+                        lot.title = data.title || lot.title; lot.description = data.description || lot.description;
+                        lot.price = data.price || lot.price; lot.category = data.category || lot.category;
+                        if (data.image) lot.image = data.image;
+                        saveData(); renderAll(); showNotification('Объявление обновлено!', 'success');
+                    }
+                    break;
+                }
+                case 'delete_lot': {
+                    const idx = myLots.findIndex(l => l.id === data.lot_id);
+                    if (idx > -1) {
+                        myLots.splice(idx, 1);
+                        const allIdx = allLots.findIndex(l => l.id === data.lot_id);
+                        if (allIdx > -1) allLots.splice(allIdx, 1);
+                        saveData(); renderAll(); showNotification('Объявление удалено', 'info');
+                    }
+                    break;
+                }
+                case 'favorite_toggle': {
+                    const favIdx = favorites.indexOf(data.lot_id);
+                    if (data.action === 'add' && favIdx === -1) favorites.push(data.lot_id);
+                    else if (data.action === 'remove' && favIdx > -1) favorites.splice(favIdx, 1);
+                    saveData(); renderAll();
+                    break;
+                }
+                case 'topup': {
+                    // Демо: в реальности баланс зачисляется по факту оплаты (вебхук/поллинг из bot.py)
+                    showNotification(`Счёт на ${data.amount} ₽ через ${data.provider} создан (демо)`, 'info');
+                    break;
+                }
+                case 'withdraw': {
+                    userBalance -= data.amount;
+                    withdrawals.unshift({ id: Date.now(), amount: data.amount, provider: data.provider, destination: data.destination, status: 'pending', createdAt: new Date().toISOString() });
+                    saveData(); renderAll();
+                    break;
+                }
+                case 'dispute': {
+                    const lot = allLots.find(l => l.id === data.lot_id);
+                    if (lot) { lot.status = 'disputed'; saveData(); renderAll(); }
+                    showNotification(t('dispute_created'), 'info');
+                    break;
+                }
+            }
+        }
+
+        // ============================================================
+        // 7. РЕНДЕРИНГ
+        // ============================================================
+        function renderAll() {
+            renderCategoryScroll();
+            renderLots();
+            renderMyLots();
+            renderFavorites();
+            renderReviews();
+            renderHistory();
+            renderWithdrawals();
+            updateProfile();
+        }
+
+        function renderCategoryScroll() {
+            const container = document.getElementById('categoryScroll');
+            const cats = CATEGORIES[currentLang];
+            container.innerHTML = Object.keys(cats).map(key => `
+                <button class="cat-pill ${currentCategory === key ? 'active' : ''}" onclick="setCategory('${key}')">${escapeHtml(cats[key])}</button>
+            `).join('');
+        }
+
+        function setCategory(cat) { currentCategory = cat; renderCategoryScroll(); renderLots(); }
+
+        function getFilteredLots() {
+            let filtered = allLots.filter(l => l.status === 'approved' || myLots.some(m => m.id === l.id));
+            if (currentCategory !== 'all') filtered = filtered.filter(l => l.category === currentCategory);
+            if (currentFilter === 'low') filtered = filtered.filter(l => l.price <= 5000);
+            else if (currentFilter === 'high') filtered = filtered.filter(l => l.price > 5000);
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase().trim();
+                filtered = filtered.filter(l => l.title.toLowerCase().includes(q) || l.description.toLowerCase().includes(q) || l.seller.toLowerCase().includes(q));
+            }
+            switch (currentSort) {
+                case 'price_asc': filtered.sort((a, b) => a.price - b.price); break;
+                case 'price_desc': filtered.sort((a, b) => b.price - a.price); break;
+                case 'rating': filtered.sort((a, b) => b.rating - a.rating); break;
+                default: filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            }
+            return filtered;
+        }
+
+        function renderLots() {
+            const container = document.getElementById('lotList');
+            const filtered = getFilteredLots();
+            if (visibleCount === 0) visibleCount = PAGE_SIZE;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">◎</div>
+                        <div class="empty-state-text">${t('no_ads')}</div>
+                        <button class="btn btn-primary" onclick="openCreateLot()">${t('create_first')}</button>
+                    </div>`;
+                return;
+            }
+
+            const pageItems = filtered.slice(0, visibleCount);
+            const hasMore = filtered.length > visibleCount;
+            const catNames = CATEGORIES[currentLang];
+
+            container.innerHTML = pageItems.map(lot => {
+                const isFav = favorites.includes(lot.id);
+                return `
+                    <div class="card lot-card" onclick="openLotModal(${lot.id})">
+                        <div class="card-header">
+                            <div>
+                                ${lot.category ? `<span class="category-chip">${escapeHtml(catNames[lot.category] || lot.category)}</span><br>` : ''}
+                                <div class="card-title">${escapeHtml(lot.title)}</div>
+                                <div class="card-sub">@${escapeHtml(lot.seller)}</div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:4px;">
+                                <button class="fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation();toggleFavorite(${lot.id})">${isFav ? '★' : '☆'}</button>
+                                <div class="card-price">${lot.price.toLocaleString()} ₽</div>
+                            </div>
+                        </div>
+                        ${lot.image ? `<img class="lot-image" src="${lot.image}" alt="${escapeHtml(lot.title)}" onclick="event.stopPropagation();">` : ''}
+                        <div class="card-desc">${escapeHtml(lot.description.substring(0, 90))}${lot.description.length > 90 ? '…' : ''}</div>
+                        <div class="card-footer">
+                            <div class="seller-info" onclick="event.stopPropagation();viewProfile('${escapeHtml(lot.seller)}')">
+                                <div class="seller-avatar">${escapeHtml(lot.seller[0].toUpperCase())}</div>
+                                <div>
+                                    <div class="seller-name">${escapeHtml(lot.seller)}${lot.verified ? ' <span class="verified-badge" title="Проверенный продавец">✓</span>' : ''}</div>
+                                    <div class="seller-rating">★ ${lot.rating} (${lot.reviews})</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                                <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openChatForLot(${lot.id})">💬</button>
+                                <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();quickBuy(${lot.id})">${t('buy')}</button>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            if (hasMore) {
+                container.innerHTML += `<div style="text-align:center;padding:10px 0;"><button class="btn btn-outline btn-block" onclick="loadMore()">${t('load_more')}</button></div>`;
+            }
+        }
+
+        function loadMore() {
+            if (isLoading) return;
+            isLoading = true;
+            const btn = document.getElementById('loadingMore');
+            btn.classList.remove('hidden');
+            setTimeout(() => {
+                visibleCount += PAGE_SIZE;
+                isLoading = false;
+                btn.classList.add('hidden');
+                renderLots();
+            }, 400);
+        }
+
+        function renderMyLots() {
+            const container = document.getElementById('myLotsList');
+            if (myLots.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">${t('no_ads')}</div>
+                    <button class="btn btn-primary" onclick="openCreateLot()">${t('create_first')}</button></div>`;
+                return;
+            }
+            container.innerHTML = myLots.map(lot => `
+                <div class="my-lot-item">
+                    <div class="my-lot-info">
+                        <div class="my-lot-title">${escapeHtml(lot.title)}</div>
+                        <div class="my-lot-price">${lot.price.toLocaleString()} ₽ <span style="color:var(--text-secondary);font-weight:500;">(−${computeCommission(lot.price).toLocaleString()} ₽ ${t('commission_hint').toLowerCase()})</span></div>
+                        <span class="my-lot-status status-${lot.status}">${t(lot.status)}</span>
+                    </div>
+                    <div class="my-lot-actions">
+                        ${(lot.status === 'approved' || lot.status === 'pending') ? `<button class="btn btn-primary btn-sm" onclick="editLot(${lot.id})">✎</button>` : ''}
+                        ${lot.status === 'approved' ? `<button class="btn btn-outline btn-sm" onclick="shareLot(${lot.id})">↗</button>` : ''}
+                        ${lot.status === 'pending' ? `<button class="btn btn-danger btn-sm" onclick="confirmDeleteLot(${lot.id})">✕</button>` : ''}
+                        <button class="btn btn-outline btn-sm" onclick="openLotModal(${lot.id})">👁</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function renderFavorites() {
+            const container = document.getElementById('favoritesList');
+            const favLots = allLots.filter(l => favorites.includes(l.id));
+            if (favLots.length === 0) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">☆</div><div class="empty-state-text">${t('no_favorites')}</div></div>`;
+                return;
+            }
+            container.innerHTML = favLots.map(lot => `
+                <div class="card" onclick="openLotModal(${lot.id})" style="padding:12px;margin-bottom:8px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-weight:700;font-size:14px;">${escapeHtml(lot.title)}</div>
+                            <div style="font-size:12px;color:var(--text-secondary);">@${escapeHtml(lot.seller)}</div>
+                        </div>
+                        <div style="text-align:right;flex-shrink:0;">
+                            <div style="font-weight:800;color:var(--primary);">${lot.price.toLocaleString()} ₽</div>
+                            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmUnfavorite(${lot.id})">✕</button>
+                        </div>
+                    </div>
+                </div>`).join('');
+        }
+
+        function renderReviews() {
+            const container = document.getElementById('reviewsList');
+            if (userReviews.length === 0) {
+                container.innerHTML = `<div style="text-align:center;padding:12px 0;color:var(--text-secondary);">${t('no_reviews')}</div>`;
+                return;
+            }
+            container.innerHTML = userReviews.map(r => `
+                <div style="padding:9px 0;border-bottom:1px solid var(--border);">
+                    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">
+                        <span style="font-weight:600;">${escapeHtml(r.from)}</span>
+                        <span style="color:var(--gold);">${'★'.repeat(r.rating)}</span>
+                    </div>
+                    <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${escapeHtml(r.comment)}</div>
+                    <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">${escapeHtml(r.date)}</div>
+                </div>`).join('');
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            if (transactions.length === 0) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">${t('no_history')}</div></div>`;
+                return;
+            }
+            container.innerHTML = transactions.map(tx => {
+                const typeKey = tx.type === 'Покупка' ? 'purchase' : 'sale';
+                const statusText = tx.status === 'completed' ? t('status_completed') : t('status_waiting');
+                return `
+                    <div class="tx-item">
+                        <div>
+                            <div style="font-weight:600;">${escapeHtml(tx.title)}</div>
+                            <div style="font-size:11px;color:var(--text-secondary);">${escapeHtml(tx.date)}</div>
+                            <div style="font-size:11px;color:var(--text-secondary);">${t(typeKey)}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="tx-amount ${tx.type === 'Покупка' ? 'negative' : 'positive'}">${tx.type === 'Покупка' ? '-' : '+'} ${tx.amount.toLocaleString()} ₽</div>
+                            <div style="font-size:10px;color:${tx.status === 'completed' ? 'var(--success)' : 'var(--warning)'};">${statusText}</div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function renderWithdrawals() {
+            const container = document.getElementById('withdrawalsList');
+            if (!withdrawals.length) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">${t('no_withdrawals')}</div></div>`;
+                return;
+            }
+            const statusColor = { pending: 'var(--warning)', sent: 'var(--success)', rejected: 'var(--danger)', failed: 'var(--danger)' };
+            const statusKey = { pending: 'wd_pending', sent: 'wd_sent', rejected: 'wd_rejected', failed: 'wd_failed' };
+            container.innerHTML = withdrawals.map(w => `
+                <div class="withdraw-item">
+                    <div>
+                        <div style="font-weight:600;">${w.amount.toLocaleString()} ₽ · ${escapeHtml(w.provider)}</div>
+                        <div style="font-size:11px;color:var(--text-secondary);">${new Date(w.createdAt).toLocaleDateString('ru-RU')}</div>
+                    </div>
+                    <div style="font-size:11px;font-weight:700;color:${statusColor[w.status] || 'var(--text-secondary)'};">${t(statusKey[w.status] || 'wd_pending')}</div>
+                </div>`).join('');
+        }
+
+        function updateProfile() {
+            const name = userData.first_name || 'Пользователь';
+            document.getElementById('profileName').textContent = name;
+            document.getElementById('profileUsername').textContent = '@' + (userData.username || 'username');
+            document.getElementById('profileAvatar').textContent = name[0].toUpperCase();
+            document.getElementById('profileRating').textContent = `★ 4.7`;
+            document.getElementById('profileReviews').textContent = `${userReviews.length} отзывов`;
+            document.getElementById('profileBalance').textContent = userBalance.toLocaleString() + ' ₽';
+            document.getElementById('profileLotsCount').textContent = myLots.length;
+            document.getElementById('profileDealsCount').textContent = transactions.length;
+            const dealsCount = transactions.length;
+            let level = t('level_newbie');
+            if (dealsCount > 20) level = t('level_expert'); else if (dealsCount > 5) level = t('level_master');
+            document.getElementById('profileLevel').textContent = level;
+        }
+
+        // ============================================================
+        // 8. ПОИСК / СОРТИРОВКА / ФИЛЬТР
+        // ============================================================
+        let searchTimeout = null;
+        function handleSearch(value) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => { searchQuery = value; visibleCount = PAGE_SIZE; renderLots(); }, 300);
+        }
+        function handleSort(value) { currentSort = value; renderLots(); }
+        function filterLots(filter) {
+            currentFilter = filter;
+            visibleCount = PAGE_SIZE;
+            document.querySelectorAll('.tabs .tab').forEach(el => el.classList.remove('active'));
+            if (event && event.target) event.target.classList.add('active');
+            renderLots();
+        }
+
+        // ============================================================
+        // 9. МОДАЛКИ ЛОТА
+        // ============================================================
+        function escrowDeadlineHtml(lot) {
+            if (lot.status !== 'in_progress' || !lot.dealStartedAt) return '';
+            const started = new Date(lot.dealStartedAt).getTime();
+            const deadline = started + ESCROW_HOURS * 3600 * 1000;
+            const left = deadline - Date.now();
+            if (left <= 0) return `<div class="escrow-timer">${t('escrow_expired')}</div>`;
+            const h = Math.floor(left / 3600000), m = Math.floor((left % 3600000) / 60000);
+            return `<div class="escrow-timer">${t('escrow_left')}: ${h}ч ${m}м</div>`;
+        }
+
+        function openLotModal(lotId) {
+            const lot = allLots.find(l => l.id === lotId);
+            if (!lot) return;
+            selectedLotId = lotId;
+            const catNames = CATEGORIES[currentLang];
+            document.getElementById('modalTitle').textContent = lot.title;
+            document.getElementById('modalPrice').textContent = lot.price.toLocaleString() + ' ₽';
+            document.getElementById('modalSeller').textContent = `${lot.seller}  ★ ${lot.rating}`;
+            document.getElementById('modalDesc').textContent = lot.description;
+            document.getElementById('modalEscrowTimer').innerHTML = escrowDeadlineHtml(lot);
+
+            const catEl = document.getElementById('modalCategory');
+            if (lot.category) { catEl.style.display = 'inline-block'; catEl.textContent = catNames[lot.category] || lot.category; }
+            else { catEl.style.display = 'none'; }
+
+            const imgContainer = document.getElementById('modalImageContainer');
+            imgContainer.innerHTML = lot.image
+                ? `<img class="lot-image" src="${lot.image}" alt="">`
+                : `<div class="lot-image-placeholder">${t('no_photo')}</div>`;
+
+            const steps = [{ key: 'approved', label: t('approved') }, { key: 'in_progress', label: t('in_progress') }, { key: 'sold', label: t('sold') }];
+            const activeIdx = steps.findIndex(s => s.key === lot.status);
+            document.getElementById('modalStatusBar').innerHTML = '<div class="status-bar">' + steps.map((step, idx) => {
+                const cls = lot.status === step.key ? 'active' : (idx < activeIdx || lot.status === 'sold') ? 'done' : '';
+                return `<span class="status-step ${cls}"><span class="step-dot"></span> ${step.label}</span>`;
+            }).join('') + '</div>';
+
+            // Купить доступно только для чужих активных лотов; спор — для сделок в процессе (после покупки)
+            const isMine = myLots.some(m => m.id === lot.id);
+            document.getElementById('modalBuyBtn').style.display = (lot.status === 'approved' && !isMine) ? 'inline-flex' : 'none';
+            document.getElementById('modalDisputeBtn').classList.toggle('hidden', !(lot.status === 'in_progress'));
+
+            document.getElementById('lotModal').classList.add('show');
+        }
+        function closeModal() { document.getElementById('lotModal').classList.remove('show'); }
+        function buyFromModal() { if (selectedLotId) { quickBuy(selectedLotId); closeModal(); } }
+        function openChatFromModal() { if (selectedLotId) { closeModal(); setTimeout(() => openChatForLot(selectedLotId), 300); } }
+        function openDisputeFromModal() {
+            if (!selectedLotId) return;
+            closeModal();
+            setTimeout(() => openDisputeModal(selectedLotId), 300);
+        }
+
+        // ============================================================
+        // 10. ИЗБРАННОЕ
+        // ============================================================
+        function toggleFavorite(lotId) {
+            const idx = favorites.indexOf(lotId);
+            if (idx > -1) { confirmUnfavorite(lotId); return; }
+            favorites.push(lotId); saveData(); renderAll();
+            showNotification('Добавлено в избранное', 'success');
+            sendToBot('favorite_toggle', { lot_id: lotId, action: 'add' });
+        }
+        function confirmUnfavorite(lotId) {
+            confirmCallback = () => {
+                const idx = favorites.indexOf(lotId);
+                if (idx > -1) {
+                    favorites.splice(idx, 1); saveData(); renderAll();
+                    showNotification('Удалено из избранного', 'info');
+                    sendToBot('favorite_toggle', { lot_id: lotId, action: 'remove' });
+                }
+            };
+            showConfirm(t('confirm_unfavorite'), t('yes'), t('no'));
+        }
+
+        // ============================================================
+        // 11. СОЗДАНИЕ / РЕДАКТИРОВАНИЕ ОБЪЯВЛЕНИЙ
+        // ============================================================
+        function populateCategorySelect() {
+            const sel = document.getElementById('lotCategoryInput');
+            const cats = CATEGORIES[currentLang];
+            sel.innerHTML = Object.keys(cats).filter(k => k !== 'all').map(k => `<option value="${k}">${escapeHtml(cats[k])}</option>`).join('');
+        }
+
+        function updateCommissionHint() {
+            const price = parseInt(document.getElementById('lotPriceInput').value) || 0;
+            const hint = document.getElementById('commissionHint');
+            if (!price) { hint.textContent = ''; return; }
+            const commission = computeCommission(price);
+            const rate = price < COMMISSION_TIER_THRESHOLD ? '7%' : '5%';
+            hint.textContent = `${t('commission_hint')}: ${commission.toLocaleString()} ₽ (${rate})`;
+        }
+
+        function openCreateLot() {
+            editingLotId = null;
+            pendingPhotoUrl = null;
+            populateCategorySelect();
+            document.getElementById('createLotTitle').textContent = t('create_ad');
+            document.getElementById('lotTitleInput').value = '';
+            document.getElementById('lotDescInput').value = '';
+            document.getElementById('lotPriceInput').value = '';
+            document.getElementById('lotPhotoInput').value = '';
+            document.getElementById('commissionHint').textContent = '';
+            document.getElementById('uploadProgressWrap').classList.add('hidden');
+            document.getElementById('submitLotBtn').textContent = t('submit');
+            document.getElementById('createLotModal').classList.add('show');
+        }
+
+        function editLot(lotId) {
+            const lot = myLots.find(l => l.id === lotId);
+            if (!lot) return;
+            editingLotId = lotId;
+            pendingPhotoUrl = null;
+            populateCategorySelect();
+            document.getElementById('createLotTitle').textContent = t('edit');
+            document.getElementById('lotTitleInput').value = lot.title;
+            document.getElementById('lotDescInput').value = lot.description;
+            document.getElementById('lotPriceInput').value = lot.price;
+            document.getElementById('lotCategoryInput').value = lot.category || 'other';
+            document.getElementById('lotPhotoInput').value = '';
+            document.getElementById('uploadProgressWrap').classList.add('hidden');
+            updateCommissionHint();
+            document.getElementById('submitLotBtn').textContent = t('submit');
+            document.getElementById('createLotModal').classList.add('show');
+        }
+
+        function closeCreateLotModal() { document.getElementById('createLotModal').classList.remove('show'); editingLotId = null; pendingPhotoUrl = null; }
+
+        // Реальная multipart-загрузка фото на /webapp/upload_photo (см. storage/s3.py на бэкенде).
+        // В демо-режиме (нет BACKEND_API_URL) фолбэк на base64 через FileReader, чтобы превью
+        // всё равно работало локально.
+        async function onPhotoSelected() {
+            const file = document.getElementById('lotPhotoInput').files?.[0];
+            if (!file) { pendingPhotoUrl = null; return; }
+
+            if (!BACKEND_API_URL) {
+                const reader = new FileReader();
+                reader.onload = (e) => { pendingPhotoUrl = e.target.result; };
+                reader.readAsDataURL(file);
+                return;
+            }
+
+            const wrap = document.getElementById('uploadProgressWrap');
+            const bar = document.getElementById('uploadProgressBar');
+            wrap.classList.remove('hidden');
+            bar.style.width = '15%';
+
+            try {
+                const form = new FormData();
+                form.append('photo', file);
+                bar.style.width = '55%';
+                const res = await fetch(BACKEND_API_URL + '/webapp/upload_photo', {
+                    method: 'POST',
+                    headers: { 'X-Telegram-Init-Data': tg.initData },
+                    body: form
+                });
+                bar.style.width = '85%';
+                const json = await res.json();
+                if (res.ok && json.ok) {
+                    pendingPhotoUrl = json.url;
+                    bar.style.width = '100%';
+                    setTimeout(() => wrap.classList.add('hidden'), 400);
+                } else {
+                    throw new Error(json.error || 'upload failed');
+                }
+            } catch (e) {
+                console.warn('Photo upload failed, falling back to local preview:', e);
+                wrap.classList.add('hidden');
+                const reader = new FileReader();
+                reader.onload = (ev) => { pendingPhotoUrl = ev.target.result; };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function submitLot() {
+            const title = document.getElementById('lotTitleInput').value.trim();
+            const description = document.getElementById('lotDescInput').value.trim();
+            const price = parseInt(document.getElementById('lotPriceInput').value);
+            const category = document.getElementById('lotCategoryInput').value;
+
+            if (!title || title.length < 3) { showNotification('Название должно содержать минимум 3 символа', 'error'); return; }
+            if (!description || description.length < 10) { showNotification('Описание должно содержать минимум 10 символов', 'error'); return; }
+            if (!price || price <= 0) { showNotification('Укажите корректную цену (больше 0)', 'error'); return; }
+
+            const btn = document.getElementById('submitLotBtn');
+            btn.disabled = true; btn.textContent = '…';
+
+            const imageData = pendingPhotoUrl;
+            if (editingLotId) {
+                const lot = myLots.find(l => l.id === editingLotId);
+                if (lot) {
+                    lot.title = title; lot.description = description; lot.price = price; lot.category = category;
+                    if (imageData) lot.image = imageData;
+                    const allLot = allLots.find(l => l.id === editingLotId);
+                    if (allLot) Object.assign(allLot, { title, description, price, category, ...(imageData ? { image: imageData } : {}) });
+                    sendToBot('update_lot', { lot_id: editingLotId, title, description, price, category, image: imageData });
+                }
+                showNotification('Объявление обновлено!', 'success');
+            } else {
+                const newLot = { id: Date.now(), title, description, price, category, seller: userData.username || 'user', verified: false, rating: 0, reviews: 0, status: 'pending', image: imageData || null, createdAt: new Date().toISOString() };
+                allLots.unshift(newLot); myLots.unshift(newLot);
+                sendToBot('create_lot', newLot);
+                showNotification('Объявление отправлено на модерацию!', 'success');
+            }
+            saveData(); renderAll(); closeCreateLotModal();
+            btn.disabled = false; btn.textContent = t('submit');
+        }
+
+        function shareLot(lotId) {
+            const lot = myLots.find(l => l.id === lotId);
+            if (!lot) return;
+            const shareText = `${lot.title} — ${lot.price} ₽\n${lot.description}`;
+            if (navigator.share) navigator.share({ title: lot.title, text: shareText });
+            else navigator.clipboard?.writeText(shareText).then(() => showNotification('Скопировано!', 'success'));
+            sendToBot('share_lot', { lot_id: lotId });
+        }
+
+        function confirmDeleteLot(lotId) {
+            confirmCallback = () => {
+                const idx = myLots.findIndex(l => l.id === lotId);
+                if (idx > -1) {
+                    myLots.splice(idx, 1);
+                    const allIdx = allLots.findIndex(l => l.id === lotId);
+                    if (allIdx > -1) allLots.splice(allIdx, 1);
+                    saveData(); renderAll();
+                    showNotification('Объявление удалено', 'info');
+                    sendToBot('delete_lot', { lot_id: lotId });
+                }
+            };
+            showConfirm(t('confirm_delete'), t('yes'), t('no'));
+        }
+
+        // ============================================================
+        // 12. ПОДТВЕРЖДЕНИЕ (модалка confirm)
+        // ============================================================
+        function showConfirm(message, yesText, noText) {
+            document.getElementById('confirmMessage').textContent = message;
+            document.querySelector('#confirmModal .btn-primary').textContent = yesText;
+            document.querySelector('#confirmModal .btn-outline').textContent = noText;
+            document.getElementById('confirmModal').classList.add('show');
+        }
+        function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('show'); confirmCallback = null; }
+        function handleConfirmYes() {
+            const cb = confirmCallback;
+            closeConfirmModal();
+            if (typeof cb === 'function') cb();
+        }
+
+        // ============================================================
+        // 13. ПОКУПКА
+        // ============================================================
+        function quickBuy(lotId) {
+            const lot = allLots.find(l => l.id === lotId);
+            if (!lot) return;
+            if (lot.seller === (userData.username || 'user')) { showNotification('Нельзя купить собственное объявление', 'error'); return; }
+            sendToBot('buy', { lot_id: lotId });
+            showNotification(`Запрос на покупку «${lot.title}» отправлен`, 'success');
+            lot.status = 'in_progress'; lot.dealStartedAt = new Date().toISOString();
+            saveData(); renderAll();
+        }
+        function viewProfile(seller) { showNotification(`Профиль ${seller}`, 'info'); }
+
+        // ============================================================
+        // 13b. ПОПОЛНЕНИЕ БАЛАНСА — сумма, затем выбор провайдера
+        //      (зеркалит /topup <сумма> -> inline-кнопки в bot.py)
+        // ============================================================
+        function openTopUpModal() {
+            topUpAmount = 0; topUpProvider = null;
+            document.getElementById('topUpAmountInput').value = '';
+            document.getElementById('topUpStep1').classList.remove('hidden');
+            document.getElementById('topUpStep2').classList.add('hidden');
+            document.getElementById('topUpModal').classList.add('show');
+        }
+        function closeTopUpModal() { document.getElementById('topUpModal').classList.remove('show'); }
+        function goToTopUpProvider() {
+            const amount = parseInt(document.getElementById('topUpAmountInput').value);
+            if (!amount || amount < MIN_TOPUP_RUB) { showNotification(`${t('min_amount_error')} (${MIN_TOPUP_RUB} ₽)`, 'error'); return; }
+            topUpAmount = amount;
+            document.getElementById('topUpAmountSummary').textContent = `${amount.toLocaleString()} ₽ — ${t('choose_provider')}`;
+            const grid = document.getElementById('topUpProviderGrid');
+            grid.innerHTML = TOPUP_PROVIDERS[currentLang].map(p => {
+                const label = p.id === 'stars' ? `${p.name} (${rubToStars(amount)}⭐)` : p.name;
+                return `<div class="provider-option" onclick="selectTopUpProvider('${p.id}')" data-provider="${p.id}">
+                    <span class="p-name">${label}</span><span class="p-check"></span>
+                </div>`;
+            }).join('');
+            document.getElementById('topUpStep1').classList.add('hidden');
+            document.getElementById('topUpStep2').classList.remove('hidden');
+        }
+        function backToTopUpAmount() {
+            document.getElementById('topUpStep2').classList.add('hidden');
+            document.getElementById('topUpStep1').classList.remove('hidden');
+        }
+        function selectTopUpProvider(id) {
+            topUpProvider = id;
+            document.querySelectorAll('#topUpProviderGrid .provider-option').forEach(el => el.classList.toggle('selected', el.dataset.provider === id));
+            document.getElementById('topUpSubmitBtn').disabled = false;
+        }
+        function submitTopUp() {
+            if (!topUpAmount || !topUpProvider) return;
+            sendToBot('topup', { amount: topUpAmount, provider: topUpProvider });
+            showNotification(t('topup_created'), 'success');
+            closeTopUpModal();
+        }
+
+        // ============================================================
+        // 13c. ВЫВОД СРЕДСТВ — сумма, провайдер, реквизиты
+        //      (зеркалит /withdraw в bot.py: WithdrawStates.amount -> provider -> destination)
+        // ============================================================
+        function openWithdrawModal() {
+            withdrawAmount = 0; withdrawProvider = null;
+            document.getElementById('withdrawAmountInput').value = '';
+            document.getElementById('withdrawBalanceHint').textContent =
+                `${t('balance')}: ${userBalance.toLocaleString()} ₽ · ${t('withdraw_amount_placeholder')}`;
+            document.getElementById('withdrawStep1').classList.remove('hidden');
+            document.getElementById('withdrawStep2').classList.add('hidden');
+            document.getElementById('withdrawModal').classList.add('show');
+        }
+        function closeWithdrawModal() { document.getElementById('withdrawModal').classList.remove('show'); }
+        function goToWithdrawProvider() {
+            const amount = parseInt(document.getElementById('withdrawAmountInput').value);
+            if (!amount || amount < MIN_WITHDRAWAL_RUB) { showNotification(`${t('min_amount_error')} (${MIN_WITHDRAWAL_RUB} ₽)`, 'error'); return; }
+            if (amount > userBalance) { showNotification(t('insufficient_balance'), 'error'); return; }
+            withdrawAmount = amount;
+            document.getElementById('withdrawAmountSummary').textContent = `${amount.toLocaleString()} ₽ — ${t('choose_provider')}`;
+            const grid = document.getElementById('withdrawProviderGrid');
+            grid.innerHTML = WITHDRAW_PROVIDERS[currentLang].map(p => `
+                <div class="provider-option" onclick="selectWithdrawProvider('${p.id}')" data-provider="${p.id}">
+                    <span class="p-name">${p.name}</span><span class="p-check"></span>
+                </div>`).join('');
+            document.getElementById('withdrawDestinationWrap').classList.add('hidden');
+            document.getElementById('withdrawStep1').classList.add('hidden');
+            document.getElementById('withdrawStep2').classList.remove('hidden');
+        }
+        function backToWithdrawAmount() {
+            document.getElementById('withdrawStep2').classList.add('hidden');
+            document.getElementById('withdrawStep1').classList.remove('hidden');
+        }
+        function selectWithdrawProvider(id) {
+            withdrawProvider = id;
+            document.querySelectorAll('#withdrawProviderGrid .provider-option').forEach(el => el.classList.toggle('selected', el.dataset.provider === id));
+            const wrap = document.getElementById('withdrawDestinationWrap');
+            const label = document.getElementById('withdrawDestinationLabel');
+            const input = document.getElementById('withdrawDestinationInput');
+            wrap.classList.remove('hidden');
+            if (id === 'cryptobot') { label.textContent = t('withdraw_dest_cryptobot'); input.placeholder = '@username / user_id'; }
+            else { label.textContent = t('withdraw_dest_xrocket'); input.placeholder = 'UQ...'; }
+            input.value = '';
+        }
+        function submitWithdraw() {
+            if (!withdrawAmount || !withdrawProvider) { showNotification(t('choose_provider'), 'error'); return; }
+            const destination = document.getElementById('withdrawDestinationInput').value.trim();
+            if (!destination) { showNotification(t('choose_provider'), 'error'); return; }
+            sendToBot('withdraw', { amount: withdrawAmount, provider: withdrawProvider, destination });
+            showNotification(t('withdraw_created'), 'success');
+            closeWithdrawModal();
+        }
+
+        // ============================================================
+        // 13d. СПОР — открытие с указанием причины
+        //      (зеркалит /dispute_<id> <причина> в bot.py)
+        // ============================================================
+        let disputeLotId = null;
+        function openDisputeModal(lotId) {
+            disputeLotId = lotId;
+            document.getElementById('disputeReasonInput').value = '';
+            document.getElementById('disputeModal').classList.add('show');
+        }
+        function closeDisputeModal() { document.getElementById('disputeModal').classList.remove('show'); disputeLotId = null; }
+        function submitDispute() {
+            const reason = document.getElementById('disputeReasonInput').value.trim();
+            if (!reason) { showNotification(t('enter_reason'), 'error'); return; }
+            if (!disputeLotId) return;
+            sendToBot('dispute', { lot_id: disputeLotId, reason });
+            closeDisputeModal();
+        }
+
+        // ============================================================
+        // 14. ЧАТ
+        // ============================================================
+        function openChatForLot(lotId) {
+            const lot = allLots.find(l => l.id === lotId);
+            if (!lot) return;
+            currentChatLotId = lotId;
+            document.getElementById('chatTitle').textContent = `Чат с ${lot.seller}`;
+            document.getElementById('chatModal').classList.add('show');
+        }
+        function closeChatModal() { document.getElementById('chatModal').classList.remove('show'); }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'chat-msg mine';
+            div.innerHTML = `${escapeHtml(msg)}<span class="time">${new Date().toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'})}</span>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            input.value = '';
+            sendToBot('chat_message', { lot_id: currentChatLotId, message: msg });
+
+            setTimeout(() => {
+                const reply = document.createElement('div');
+                reply.className = 'chat-msg other';
+                reply.innerHTML = `Спасибо за сообщение! Рассмотрю ваш запрос.<span class="time">${new Date().toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'})}</span>`;
+                container.appendChild(reply);
+                container.scrollTop = container.scrollHeight;
+            }, 1500);
+        }
+
+        // ============================================================
+        // 15. НАСТРОЙКИ
+        // ============================================================
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            document.getElementById('darkToggle').classList.toggle('active');
+            localStorage.setItem('darkTheme', document.body.classList.contains('dark'));
+        }
+        function toggleSetting(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('active');
+            const value = el.classList.contains('active');
+            localStorage.setItem(id, value);
+            sendToBot('setting_update', { setting: id, value });
+        }
+        function loadSettings() {
+            if (localStorage.getItem('darkTheme') === 'true') { document.body.classList.add('dark'); document.getElementById('darkToggle').classList.add('active'); }
+            ['notifyPurchase', 'notifyMessages', 'notifyReviews', 'soundToggle'].forEach(id => {
+                const val = localStorage.getItem(id);
+                document.getElementById(id).classList.toggle('active', val !== 'false');
+            });
+        }
+
+        // ============================================================
+        // 16. УВЕДОМЛЕНИЯ
+        // ============================================================
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            const div = document.createElement('div');
+            div.className = `notification ${type}`;
+            div.textContent = message;
+            container.prepend(div);
+            setTimeout(() => { div.style.opacity = '0'; div.style.transition = 'opacity .3s'; setTimeout(() => div.remove(), 300); }, 3500);
+        }
+
+        // ============================================================
+        // 17. СВЯЗЬ С БЭКЕНДОМ
+        // ============================================================
+        // В реальном Telegram WebApp tg.sendData() закрывает приложение сразу после
+        // вызова — поэтому его нельзя дёргать на каждое действие (избранное, чат и т.д).
+        // Правильная схема: обычные HTTP-запросы к своему бэкенду с initData в заголовке
+        // для верификации, а sendData использовать только для финального возврата в бота.
+        async function apiCall(action, data) {
+            if (!BACKEND_API_URL) return false;
+            try {
+                const res = await fetch(BACKEND_API_URL + '/webapp/' + action, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg.initData },
+                    body: JSON.stringify(data)
+                });
+                return res.ok;
+            } catch (e) {
+                console.warn('apiCall failed, falling back to local demo:', e);
+                return false;
+            }
+        }
+
+        function sendToBot(action, data = {}) {
+            // Пытаемся через бэкенд (без закрытия мини-аппа); если бэкенда нет или конкретный
+            // action ещё не реализован на сервере (ACTION_HANDLERS в bot.py) — работаем
+            // локально в демо-режиме (handleLocalAction), чтобы UI оставался кликабельным.
+            // ВАЖНО: create_lot/update_lot/delete_lot/withdraw/dispute/chat_message/setting_update/
+            // share_lot пока НЕ реализованы в ACTION_HANDLERS бэкенда v5.0 (там только
+            // buy, favorite_toggle, save_draft) — для них apiCall всегда вернёт false/404,
+            // и локальный демо-обработчик отработает как фолбэк. Чтобы они реально сохранялись
+            // на сервере, нужно доработать bot.py.
+            apiCall(action, data).then(ok => { if (!ok) handleLocalAction({ action, ...data }); });
+            if (isTelegram) handleLocalAction({ action, ...data }); // в демо-браузере уже обработано через sendData
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // ============================================================
+        // 18. ОБРАБОТКА ВХОДЯЩИХ СОБЫТИЙ ОТ БОТА
+        // ============================================================
+        tg.onEvent('data', (data) => {
+            try {
+                const parsed = JSON.parse(data);
+                switch (parsed.type) {
+                    case 'lots_data': allLots = parsed.data || allLots; saveData(); renderLots(); break;
+                    case 'my_lots_data': myLots = parsed.data || myLots; saveData(); renderMyLots(); break;
+                    case 'favorites_data': favorites = parsed.data || favorites; saveData(); renderFavorites(); break;
+                    case 'transactions_data': transactions = parsed.data || transactions; saveData(); renderHistory(); break;
+                    case 'reviews_data': userReviews = parsed.data || userReviews; saveData(); renderReviews(); break;
+                    case 'withdrawals_data': withdrawals = parsed.data || withdrawals; saveData(); renderWithdrawals(); break;
+                    case 'balance_data': userBalance = parsed.data ?? userBalance; saveData(); updateProfile(); break;
+                    case 'lot_status_change': {
+                        const lot = myLots.find(l => l.id === parsed.lot_id);
+                        if (lot) { lot.status = parsed.status; saveData(); renderMyLots(); renderLots(); }
+                        break;
+                    }
+                }
+            } catch (e) { console.log('Data parse error:', e); }
+        });
+
+        // ============================================================
+        // 19. ВКЛАДКИ
+        // ============================================================
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const map = { catalog: 'tabCatalog', profile: 'tabProfile', my_lots: 'tabMyLots', favorites: 'tabFavorites', settings: 'tabSettings' };
+            const el = document.getElementById(map[tab]);
+            if (el) el.classList.remove('hidden');
+            document.querySelectorAll('.top-btn').forEach(el => el.classList.remove('active'));
+            const btnMap = { catalog: 'tabCatalogBtn', profile: 'tabProfileBtn', my_lots: 'tabMyLotsBtn', favorites: 'tabFavBtn', settings: 'tabSettingsBtn' };
+            const btn = document.getElementById(btnMap[tab]);
+            if (btn) btn.classList.add('active');
+            if (tab === 'profile') { updateProfile(); renderHistory(); renderWithdrawals(); }
+            if (tab === 'my_lots') renderMyLots();
+            if (tab === 'catalog') renderLots();
+            if (tab === 'favorites') renderFavorites();
+        }
+
+        // ============================================================
+        // 20. PULL-TO-REFRESH (для браузера/тач-устройств)
+        // ============================================================
+        let touchStartY2 = 0, isRefreshing2 = false;
+        document.addEventListener('touchstart', (e) => { if (e.touches?.[0]) touchStartY2 = e.touches[0].clientY; });
+        document.addEventListener('touchmove', (e) => {
+            if (isRefreshing2 || !e.touches?.[0]) return;
+            const currentTab = document.querySelector('.tab-content:not(.hidden)');
+            if (!currentTab) return;
+            const scrollTop = currentTab.scrollTop || window.scrollY;
+            if (scrollTop === 0 && e.touches[0].clientY - touchStartY2 > 80) {
+                isRefreshing2 = true;
+                showNotification('Обновление…', 'info');
+                setTimeout(() => { initData(); renderAll(); isRefreshing2 = false; showNotification('Обновлено', 'success'); }, 900);
+            }
+        });
+
+        // ============================================================
+        // 21. ЗАПУСК
+        // ============================================================
+        ['lotModal', 'chatModal', 'createLotModal', 'confirmModal', 'topUpModal', 'withdrawModal', 'disputeModal'].forEach(id => {
+            document.getElementById(id).addEventListener('click', function(e) {
+                if (e.target === this) {
+                    if (id === 'lotModal') closeModal();
+                    if (id === 'chatModal') closeChatModal();
+                    if (id === 'createLotModal') closeCreateLotModal();
+                    if (id === 'confirmModal') closeConfirmModal();
+                    if (id === 'topUpModal') closeTopUpModal();
+                    if (id === 'withdrawModal') closeWithdrawModal();
+                    if (id === 'disputeModal') closeDisputeModal();
+                }
+            });
+        });
+
+        const savedLang = localStorage.getItem('lang') || 'ru';
+        switchLang(savedLang);
+
+        setTimeout(() => {
+            initData();
+            renderAll();
+            loadSettings();
+            if (!isTelegram) showNotification('Демо-режим (данные хранятся локально)', 'info');
+        }, 300);
+
+        console.log('HoldDeal MiniApp v5.0 загружен. Режим:', isTelegram ? 'Telegram WebApp' : 'Браузер (эмуляция)');
+    </script>
+</body>
+</html>
