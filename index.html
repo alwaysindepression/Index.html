@@ -969,6 +969,19 @@
         </div>
     </div>
 
+    <!-- ===== ОТЗЫВ ===== -->
+    <div class="modal-overlay" id="reviewModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeReviewModal()">✕</button>
+            <div class="modal-title" data-key="leave_review">Оставить отзыв</div>
+            <div class="rating-picker" id="reviewStarsPicker" style="font-size:32px;text-align:center;margin:14px 0;letter-spacing:6px;"></div>
+            <div style="display:flex;gap:6px;">
+                <button class="btn btn-primary btn-block" onclick="submitReview()" id="reviewSubmitBtn" disabled data-key="submit_review">Отправить</button>
+                <button class="btn btn-outline" onclick="closeReviewModal()" data-key="cancel">Отмена</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ============================================================
         // БЕЗОПАСНОСТЬ: экранирование пользовательского ввода (XSS)
@@ -1051,6 +1064,8 @@
         let transactions = [];
         let withdrawals = [];
         let userBalance = 0;
+        let currentUserRating = null;
+        let currentUserReviewsCount = 0;
         let currentFilter = 'all';
         let currentSort = 'newest';
         let currentCategory = 'all';
@@ -1144,7 +1159,8 @@
                 wd_pending: 'В обработке', wd_sent: 'Выполнено', wd_rejected: 'Отклонено', wd_failed: 'Ошибка',
                 insufficient_balance: 'Недостаточно средств на балансе', min_amount_error: 'Сумма меньше минимальной',
                 topup_created: 'Счёт на пополнение создан, следуйте инструкциям бота', withdraw_created: 'Заявка на вывод создана и отправлена на подтверждение',
-                dispute_created: 'Спор открыт, модератор рассмотрит обращение', enter_reason: 'Опишите причину спора'
+                dispute_created: 'Спор открыт, модератор рассмотрит обращение', enter_reason: 'Опишите причину спора',
+                leave_review: 'Оставить отзыв', submit_review: 'Отправить'
             },
             en: {
                 filter_all: 'All', filter_low: 'Up to 5000 ₽', filter_high: 'From 5000 ₽',
@@ -1181,7 +1197,8 @@
                 wd_pending: 'Pending', wd_sent: 'Sent', wd_rejected: 'Rejected', wd_failed: 'Failed',
                 insufficient_balance: 'Insufficient balance', min_amount_error: 'Amount is below the minimum',
                 topup_created: 'Top-up invoice created, follow the bot instructions', withdraw_created: 'Withdrawal request created and sent for confirmation',
-                dispute_created: 'Dispute opened, a moderator will review it', enter_reason: 'Describe the reason for the dispute'
+                dispute_created: 'Dispute opened, a moderator will review it', enter_reason: 'Describe the reason for the dispute',
+                leave_review: 'Leave a review', submit_review: 'Submit'
             }
         };
         function t(key) { return langData[currentLang]?.[key] || key; }
@@ -1214,125 +1231,87 @@
         }
 
         // ============================================================
-        // 5. ДАННЫЕ (демо)
+        // 5. ДАННЫЕ — загружаются с бэкенда, никаких моков и localStorage
+        // для бизнес-данных (баланс, лоты, отзывы, сделки, избранное).
+        // localStorage используется только для UI-настроек (язык/тема/звук).
         // ============================================================
-        const mockLots = [
-            { id: 1, title: 'Разработка сайта на React', price: 15000, category: 'dev', description: 'Сделаю лендинг или интернет-магазин под ключ. Адаптив, анимации, оптимизация.', seller: 'webdev_pro', verified: true, rating: 4.8, reviews: 23, status: 'approved', image: null, createdAt: '2026-08-16T10:00:00' },
-            { id: 2, title: 'Дизайн логотипа', price: 5000, category: 'design', description: 'Разработка уникального логотипа с неймингом. 3 варианта, 5 правок.', seller: 'design_master', verified: true, rating: 4.9, reviews: 45, status: 'approved', image: null, createdAt: '2026-08-15T14:30:00' },
-            { id: 3, title: 'SEO оптимизация сайта', price: 12000, category: 'marketing', description: 'Полный аудит, сбор семантики, оптимизация контента, вывод в топ-10.', seller: 'seo_expert', verified: false, rating: 4.7, reviews: 31, status: 'approved', image: null, createdAt: '2026-08-14T09:15:00' },
-            { id: 4, title: 'Настройка контекстной рекламы', price: 8000, category: 'marketing', description: 'Настройка Яндекс.Директ и Google Ads. Оптимизация бюджета, подбор ключей.', seller: 'ppc_pro', verified: false, rating: 4.6, reviews: 18, status: 'approved', image: null, createdAt: '2026-08-13T16:45:00' },
-            { id: 5, title: 'Копирайтинг для блога', price: 3000, category: 'copy', description: 'Написание экспертных статей для блога. Тематика: IT, бизнес, маркетинг.', seller: 'copywriter_io', verified: false, rating: 4.5, reviews: 29, status: 'approved', image: null, createdAt: '2026-08-12T11:20:00' },
-        ];
-        const mockMyLots = [
-            { id: 101, title: 'Веб-разработка на заказ', price: 20000, category: 'dev', status: 'approved', description: 'Создам сайт любой сложности...', image: null, createdAt: '2026-08-16T08:00:00' },
-            { id: 102, title: 'Аудит сайта', price: 7000, category: 'marketing', status: 'pending', description: 'Полный технический аудит...', image: null, createdAt: '2026-08-15T12:00:00' },
-            { id: 103, title: 'Интеграция с CRM', price: 15000, category: 'dev', status: 'in_progress', description: 'Настройка интеграции...', image: null, createdAt: '2026-08-14T10:00:00' },
-        ];
-        const mockFavorites = [1, 3];
-        const mockReviews = [
-            { from: 'client1', rating: 5, comment: 'Отличная работа!', date: '2026-08-15' },
-            { from: 'client2', rating: 4, comment: 'Быстро, но можно лучше', date: '2026-08-14' },
-        ];
-        const mockTransactions = [
-            { id: 1, title: 'Разработка сайта', amount: 15000, type: 'Покупка', date: '2026-08-16', status: 'completed' },
-            { id: 2, title: 'Дизайн логотипа', amount: 5000, type: 'Продажа', date: '2026-08-15', status: 'completed' },
-            { id: 3, title: 'SEO оптимизация', amount: 12000, type: 'Покупка', date: '2026-08-14', status: 'pending' },
-        ];
-        const mockWithdrawals = [];
-        const mockBalance = 42500;
+        let bootstrapLoaded = false;
+        let bootstrapError = null;
 
-        function initData() {
-            const saved = localStorage.getItem('holddeal_data');
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    allLots = data.lots || mockLots;
-                    myLots = data.myLots || mockMyLots;
-                    favorites = data.favorites || mockFavorites;
-                    userReviews = data.reviews || mockReviews;
-                    transactions = data.transactions || mockTransactions;
-                    withdrawals = data.withdrawals || mockWithdrawals;
-                    userBalance = data.balance ?? mockBalance;
-                    return;
-                } catch (e) {}
+        async function loadBootstrapData() {
+            bootstrapError = null;
+            if (!BACKEND_API_URL) {
+                bootstrapError = 'no_backend';
+                allLots = []; myLots = []; favorites = []; userReviews = [];
+                transactions = []; withdrawals = []; userBalance = 0;
+                return;
             }
-            allLots = [...mockLots]; myLots = [...mockMyLots]; favorites = [...mockFavorites];
-            userReviews = [...mockReviews]; transactions = [...mockTransactions];
-            withdrawals = [...mockWithdrawals]; userBalance = mockBalance;
-            saveData();
-        }
-
-        function saveData() {
-            localStorage.setItem('holddeal_data', JSON.stringify({ lots: allLots, myLots, favorites, reviews: userReviews, transactions, withdrawals, balance: userBalance }));
-        }
-
-        // ============================================================
-        // 6. ЛОКАЛЬНАЯ ОБРАБОТКА ДЕЙСТВИЙ (демо-режим в браузере)
-        // ============================================================
-        function handleLocalAction(data) {
-            const action = data.action;
-            switch (action) {
-                case 'buy': {
-                    const lot = allLots.find(l => l.id === data.lot_id);
-                    if (lot) { lot.status = 'in_progress'; lot.dealStartedAt = new Date().toISOString(); saveData(); renderAll(); showNotification(`Куплено: ${lot.title}`, 'success'); }
-                    break;
-                }
-                case 'create_lot': {
-                    const newLot = {
-                        id: Date.now(), title: data.title || 'Новое объявление', description: data.description || '',
-                        price: data.price || 1000, category: data.category || 'other', seller: userData.username || 'user',
-                        verified: false, rating: 0, reviews: 0, status: 'pending', image: data.image || null, createdAt: new Date().toISOString()
-                    };
-                    allLots.unshift(newLot); myLots.unshift(newLot); saveData(); renderAll();
-                    showNotification('Новое объявление создано!', 'success');
-                    break;
-                }
-                case 'update_lot': {
-                    const lot = myLots.find(l => l.id === data.lot_id);
-                    if (lot) {
-                        lot.title = data.title || lot.title; lot.description = data.description || lot.description;
-                        lot.price = data.price || lot.price; lot.category = data.category || lot.category;
-                        if (data.image) lot.image = data.image;
-                        saveData(); renderAll(); showNotification('Объявление обновлено!', 'success');
-                    }
-                    break;
-                }
-                case 'delete_lot': {
-                    const idx = myLots.findIndex(l => l.id === data.lot_id);
-                    if (idx > -1) {
-                        myLots.splice(idx, 1);
-                        const allIdx = allLots.findIndex(l => l.id === data.lot_id);
-                        if (allIdx > -1) allLots.splice(allIdx, 1);
-                        saveData(); renderAll(); showNotification('Объявление удалено', 'info');
-                    }
-                    break;
-                }
-                case 'favorite_toggle': {
-                    const favIdx = favorites.indexOf(data.lot_id);
-                    if (data.action === 'add' && favIdx === -1) favorites.push(data.lot_id);
-                    else if (data.action === 'remove' && favIdx > -1) favorites.splice(favIdx, 1);
-                    saveData(); renderAll();
-                    break;
-                }
-                case 'topup': {
-                    // Демо: в реальности баланс зачисляется по факту оплаты (вебхук/поллинг из bot.py)
-                    showNotification(`Счёт на ${data.amount} ₽ через ${data.provider} создан (демо)`, 'info');
-                    break;
-                }
-                case 'withdraw': {
-                    userBalance -= data.amount;
-                    withdrawals.unshift({ id: Date.now(), amount: data.amount, provider: data.provider, destination: data.destination, status: 'pending', createdAt: new Date().toISOString() });
-                    saveData(); renderAll();
-                    break;
-                }
-                case 'dispute': {
-                    const lot = allLots.find(l => l.id === data.lot_id);
-                    if (lot) { lot.status = 'disputed'; saveData(); renderAll(); }
-                    showNotification(t('dispute_created'), 'info');
-                    break;
-                }
+            try {
+                const res = await fetch(BACKEND_API_URL + '/webapp/bootstrap', {
+                    method: 'GET',
+                    headers: { 'X-Telegram-Init-Data': tg.initData }
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                if (!data.ok) throw new Error(data.error || 'bootstrap_failed');
+                applyBootstrapData(data);
+                bootstrapLoaded = true;
+            } catch (e) {
+                console.error('Не удалось загрузить данные с бэкенда:', e);
+                bootstrapError = String(e);
+                allLots = []; myLots = []; favorites = []; userReviews = [];
+                transactions = []; withdrawals = []; userBalance = 0;
             }
         }
+
+        // Бэкенд отдаёт данные лота как есть (title/price/status/...), а карточки
+        // в UI исторически ждут ещё seller/rating/reviews/image/createdAt —
+        // раскладываем здесь один раз, чтобы не переписывать весь renderLots().
+        function mapCatalogLot(l) {
+            return {
+                id: l.id, title: l.title, description: l.description, price: l.price,
+                category: l.category, status: l.status, image: l.photo_url || null,
+                createdAt: l.created_at, seller: l.seller_username || ('id' + l.seller_id),
+                sellerId: l.seller_id, verified: !!l.seller_verified,
+                rating: l.seller_rating ? Number(l.seller_rating).toFixed(1) : 0,
+                reviews: l.seller_reviews || 0,
+            };
+        }
+        function mapMyLot(l) {
+            return {
+                id: l.id, title: l.title, description: l.description, price: l.price,
+                category: l.category, status: l.status, image: l.photo_url || null,
+                createdAt: l.created_at, buyerId: l.buyer_id,
+            };
+        }
+
+        function applyBootstrapData(data) {
+            userBalance = data.user?.balance ?? 0;
+            currentUserRating = data.user?.rating ?? null;
+            currentUserReviewsCount = data.user?.reviews_count ?? 0;
+            allLots = (data.catalog || []).map(mapCatalogLot);
+            myLots = (data.my_lots || []).map(mapMyLot);
+            favorites = data.favorites || [];
+            userReviews = (data.reviews || []).map(r => ({ from: r.from_username || 'user', rating: r.rating, date: (r.created_at || '').slice(0, 10) }));
+            transactions = (data.transactions || []).map(t => ({
+                id: t.id, title: t.title, amount: t.amount, status: t.status, date: (t.created_at || '').slice(0, 10),
+                type: t.kind === 'purchase' ? 'Покупка' : 'Продажа', kind: t.kind, reviewed: t.reviewed, lotId: t.lot_id,
+            }));
+            withdrawals = (data.withdrawals || []).map(w => ({
+                id: w.id, amount: w.amount, provider: w.provider, destination: w.destination,
+                status: w.status, createdAt: w.created_at,
+            }));
+        }
+
+        async function refreshAppData() {
+            await loadBootstrapData();
+            renderAll();
+        }
+
+        // ============================================================
+        // 6. (демо-режим удалён — все действия идут через реальный бэкенд,
+        // см. apiCall()/sendToBot() в разделе 17 ниже)
+        // ============================================================
 
         // ============================================================
         // 7. РЕНДЕРИНГ
@@ -1504,7 +1483,6 @@
                         <span style="font-weight:600;">${escapeHtml(r.from)}</span>
                         <span style="color:var(--gold);">${'★'.repeat(r.rating)}</span>
                     </div>
-                    <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${escapeHtml(r.comment)}</div>
                     <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">${escapeHtml(r.date)}</div>
                 </div>`).join('');
         }
@@ -1518,12 +1496,14 @@
             container.innerHTML = transactions.map(tx => {
                 const typeKey = tx.type === 'Покупка' ? 'purchase' : 'sale';
                 const statusText = tx.status === 'completed' ? t('status_completed') : t('status_waiting');
+                const showReviewBtn = tx.kind === 'purchase' && tx.status === 'completed' && !tx.reviewed;
                 return `
                     <div class="tx-item">
                         <div>
                             <div style="font-weight:600;">${escapeHtml(tx.title)}</div>
                             <div style="font-size:11px;color:var(--text-secondary);">${escapeHtml(tx.date)}</div>
                             <div style="font-size:11px;color:var(--text-secondary);">${t(typeKey)}</div>
+                            ${showReviewBtn ? `<button class="btn btn-outline btn-sm" style="margin-top:6px;" onclick="openReviewModal(${tx.id})" data-key="leave_review">Оставить отзыв</button>` : ''}
                         </div>
                         <div style="text-align:right;">
                             <div class="tx-amount ${tx.type === 'Покупка' ? 'negative' : 'positive'}">${tx.type === 'Покупка' ? '-' : '+'} ${tx.amount.toLocaleString()} ₽</div>
@@ -1641,23 +1621,18 @@
         }
 
         // ============================================================
-        // 10. ИЗБРАННОЕ
+        // 10. ИЗБРАННОЕ (персистентно на бэкенде, таблица favorites)
         // ============================================================
-        function toggleFavorite(lotId) {
+        async function toggleFavorite(lotId) {
             const idx = favorites.indexOf(lotId);
             if (idx > -1) { confirmUnfavorite(lotId); return; }
-            favorites.push(lotId); saveData(); renderAll();
-            showNotification('Добавлено в избранное', 'success');
-            sendToBot('favorite_toggle', { lot_id: lotId, action: 'add' });
+            const result = await sendToBot('favorite_toggle', { lot_id: lotId });
+            if (result) showNotification('Добавлено в избранное', 'success');
         }
         function confirmUnfavorite(lotId) {
-            confirmCallback = () => {
-                const idx = favorites.indexOf(lotId);
-                if (idx > -1) {
-                    favorites.splice(idx, 1); saveData(); renderAll();
-                    showNotification('Удалено из избранного', 'info');
-                    sendToBot('favorite_toggle', { lot_id: lotId, action: 'remove' });
-                }
+            confirmCallback = async () => {
+                const result = await sendToBot('favorite_toggle', { lot_id: lotId });
+                if (result) showNotification('Удалено из избранного', 'info');
             };
             showConfirm(t('confirm_unfavorite'), t('yes'), t('no'));
         }
@@ -1761,7 +1736,7 @@
             }
         }
 
-        function submitLot() {
+        async function submitLot() {
             const title = document.getElementById('lotTitleInput').value.trim();
             const description = document.getElementById('lotDescInput').value.trim();
             const price = parseInt(document.getElementById('lotPriceInput').value);
@@ -1775,23 +1750,15 @@
             btn.disabled = true; btn.textContent = '…';
 
             const imageData = pendingPhotoUrl;
+            let result;
             if (editingLotId) {
-                const lot = myLots.find(l => l.id === editingLotId);
-                if (lot) {
-                    lot.title = title; lot.description = description; lot.price = price; lot.category = category;
-                    if (imageData) lot.image = imageData;
-                    const allLot = allLots.find(l => l.id === editingLotId);
-                    if (allLot) Object.assign(allLot, { title, description, price, category, ...(imageData ? { image: imageData } : {}) });
-                    sendToBot('update_lot', { lot_id: editingLotId, title, description, price, category, image: imageData });
-                }
-                showNotification('Объявление обновлено!', 'success');
+                result = await sendToBot('update_lot', { lot_id: editingLotId, title, description, price, category, photo_url: imageData });
+                if (result) showNotification('Объявление обновлено!', 'success');
             } else {
-                const newLot = { id: Date.now(), title, description, price, category, seller: userData.username || 'user', verified: false, rating: 0, reviews: 0, status: 'pending', image: imageData || null, createdAt: new Date().toISOString() };
-                allLots.unshift(newLot); myLots.unshift(newLot);
-                sendToBot('create_lot', newLot);
-                showNotification('Объявление отправлено на модерацию!', 'success');
+                result = await sendToBot('create_lot', { title, description, price, category, photo_url: imageData });
+                if (result) showNotification('Объявление отправлено на модерацию!', 'success');
             }
-            saveData(); renderAll(); closeCreateLotModal();
+            if (result) closeCreateLotModal();
             btn.disabled = false; btn.textContent = t('submit');
         }
 
@@ -1801,20 +1768,12 @@
             const shareText = `${lot.title} — ${lot.price} ₽\n${lot.description}`;
             if (navigator.share) navigator.share({ title: lot.title, text: shareText });
             else navigator.clipboard?.writeText(shareText).then(() => showNotification('Скопировано!', 'success'));
-            sendToBot('share_lot', { lot_id: lotId });
         }
 
         function confirmDeleteLot(lotId) {
-            confirmCallback = () => {
-                const idx = myLots.findIndex(l => l.id === lotId);
-                if (idx > -1) {
-                    myLots.splice(idx, 1);
-                    const allIdx = allLots.findIndex(l => l.id === lotId);
-                    if (allIdx > -1) allLots.splice(allIdx, 1);
-                    saveData(); renderAll();
-                    showNotification('Объявление удалено', 'info');
-                    sendToBot('delete_lot', { lot_id: lotId });
-                }
+            confirmCallback = async () => {
+                const result = await sendToBot('delete_lot', { lot_id: lotId });
+                if (result) showNotification('Объявление удалено', 'info');
             };
             showConfirm(t('confirm_delete'), t('yes'), t('no'));
         }
@@ -1965,6 +1924,46 @@
         }
 
         // ============================================================
+        // 13б. ОТЗЫВЫ (оставить отзыв о продавце после завершённой сделки)
+        // ============================================================
+        let reviewTransactionId = null;
+        let reviewRatingValue = 0;
+
+        function openReviewModal(transactionId) {
+            reviewTransactionId = transactionId;
+            reviewRatingValue = 0;
+            renderReviewStars();
+            document.getElementById('reviewSubmitBtn').disabled = true;
+            document.getElementById('reviewModal').classList.add('show');
+        }
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.remove('show');
+            reviewTransactionId = null;
+        }
+        function renderReviewStars() {
+            const el = document.getElementById('reviewStarsPicker');
+            el.innerHTML = [1, 2, 3, 4, 5].map(n => `<span onclick="setReviewRating(${n})" style="cursor:pointer;color:${n <= reviewRatingValue ? 'var(--gold)' : 'var(--border)'};">★</span>`).join('');
+        }
+        function setReviewRating(n) {
+            reviewRatingValue = n;
+            renderReviewStars();
+            document.getElementById('reviewSubmitBtn').disabled = false;
+        }
+        async function submitReview() {
+            if (!reviewTransactionId || !reviewRatingValue) return;
+            const btn = document.getElementById('reviewSubmitBtn');
+            btn.disabled = true;
+            const ok = await apiCall('submit_review', { transaction_id: reviewTransactionId, rating: reviewRatingValue });
+            if (ok) {
+                showNotification('Спасибо за отзыв!', 'success');
+                closeReviewModal();
+                await refreshAppData();
+            } else {
+                btn.disabled = false;
+            }
+        }
+
+        // ============================================================
         // 14. ЧАТ
         // ============================================================
         function openChatForLot(lotId) {
@@ -2040,61 +2039,71 @@
         // вызова — поэтому его нельзя дёргать на каждое действие (избранное, чат и т.д).
         // Правильная схема: обычные HTTP-запросы к своему бэкенду с initData в заголовке
         // для верификации, а sendData использовать только для финального возврата в бота.
+        // apiCall возвращает распарсенный JSON-ответ бэкенда при успехе (res.ok) и
+        // null при ошибке — никакого локального демо-фолбэка больше нет: если бэкенд
+        // недоступен или отклонил запрос, пользователь должен увидеть настоящую ошибку,
+        // а не молча получить фейковое "успешно".
         async function apiCall(action, data) {
-            if (!BACKEND_API_URL) return false;
+            if (!BACKEND_API_URL) {
+                showNotification('Бэкенд не настроен (BACKEND_API_URL пуст).', 'error');
+                return null;
+            }
             try {
                 const res = await fetch(BACKEND_API_URL + '/webapp/' + action, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg.initData },
                     body: JSON.stringify(data)
                 });
-                if (!res.ok) {
-                    const text = await res.text();
-                    console.error('Backend rejected request:', action, res.status, text);
-                    throw new Error(text || 'backend_error');
+                const json = await res.json().catch(() => ({}));
+                if (!res.ok || json.error) {
+                    console.error('Backend rejected request:', action, res.status, json);
+                    showNotification(json.message || 'Ошибка запроса к серверу.', 'error');
+                    return null;
                 }
-                return true;
+                return json;
             } catch (e) {
                 console.warn('apiCall failed, backend unavailable:', e);
                 showNotification('Бэкенд недоступен. Проверь, что бот запущен и домен правильный.', 'error');
-                return false;
+                return null;
             }
         }
 
-        function sendToBot(action, data = {}) {
-            // Пытаемся через бэкенд (без закрытия мини-аппа); если бэкенда нет или конкретный
-            // action ещё не реализован на сервере (ACTION_HANDLERS в bot.py) — работаем
-            // локально в демо-режиме (handleLocalAction), чтобы UI оставался кликабельным.
-            // ВАЖНО: create_lot/update_lot/delete_lot/withdraw/dispute/chat_message/setting_update/
-            // share_lot пока НЕ реализованы в ACTION_HANDLERS бэкенда v5.0 (там только
-            // buy, favorite_toggle, save_draft) — для них apiCall всегда вернёт false/404,
-            // и локальный демо-обработчик отработает как фолбэк. Чтобы они реально сохранялись
-            // на сервере, нужно доработать bot.py.
-            apiCall(action, data).then(ok => { if (!ok) handleLocalAction({ action, ...data }); });
-            if (isTelegram) handleLocalAction({ action, ...data }); // в демо-браузере уже обработано через sendData
+        async function apiGet(path) {
+            if (!BACKEND_API_URL) return null;
+            try {
+                const res = await fetch(BACKEND_API_URL + path, {
+                    method: 'GET',
+                    headers: { 'X-Telegram-Init-Data': tg.initData }
+                });
+                const json = await res.json().catch(() => ({}));
+                if (!res.ok || json.error) return null;
+                return json;
+            } catch (e) {
+                console.warn('apiGet failed:', e);
+                return null;
+            }
+        }
+
+        // Для действий, после которых состояние на сервере меняется существенно
+        // (покупка, создание/редактирование/удаление лота, избранное, вывод, спор) —
+        // просто перезапрашиваем bootstrap и перерисовываем всё, вместо того чтобы
+        // вручную гадать, как именно обновить каждый локальный массив.
+        async function sendToBot(action, data = {}) {
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            const result = await apiCall(action, data);
+            if (result) await refreshAppData();
+            return result;
         }
 
         // ============================================================
-        // 18. ОБРАБОТКА ВХОДЯЩИХ СОБЫТИЙ ОТ БОТА
+        // 18. ОБРАБОТКА ВХОДЯЩИХ СОБЫТИЙ ОТ БОТА (push-обновления, если бот
+        // умеет слать tg.WebApp events; сейчас не обязателен — данные и так
+        // всегда можно перезапросить через refreshAppData()).
         // ============================================================
         tg.onEvent('data', (data) => {
             try {
                 const parsed = JSON.parse(data);
-                switch (parsed.type) {
-                    case 'lots_data': allLots = parsed.data || allLots; saveData(); renderLots(); break;
-                    case 'my_lots_data': myLots = parsed.data || myLots; saveData(); renderMyLots(); break;
-                    case 'favorites_data': favorites = parsed.data || favorites; saveData(); renderFavorites(); break;
-                    case 'transactions_data': transactions = parsed.data || transactions; saveData(); renderHistory(); break;
-                    case 'reviews_data': userReviews = parsed.data || userReviews; saveData(); renderReviews(); break;
-                    case 'withdrawals_data': withdrawals = parsed.data || withdrawals; saveData(); renderWithdrawals(); break;
-                    case 'balance_data': userBalance = parsed.data ?? userBalance; saveData(); updateProfile(); break;
-                    case 'lot_status_change': {
-                        const lot = myLots.find(l => l.id === parsed.lot_id);
-                        if (lot) { lot.status = parsed.status; saveData(); renderMyLots(); renderLots(); }
-                        break;
-                    }
-                }
+                if (parsed.type) refreshAppData();
             } catch (e) { console.log('Data parse error:', e); }
         });
 
