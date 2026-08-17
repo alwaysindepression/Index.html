@@ -1024,7 +1024,7 @@
 
         // ВАЖНО: на бэкенде каждый запрос нужно проверять через tg.initData
         // (HMAC-подпись initData секретом бота) — фронтовый user.id доверять нельзя.
-        const BACKEND_API_URL = 'https://alwaysindepression.github.io/Index.html/'; // укажи свой домен бэкенда, напр. 'https://api.yourdomain.com'
+        const BACKEND_API_URL = 'https://bot-1786943902-5404-kaydzhe-mind.bothost.tech';
 
         const userId = tg.initDataUnsafe.user?.id || 12345;
         const userData = tg.initDataUnsafe.user || { id: 12345, first_name: 'Тестовый', username: 'test_user' };
@@ -2046,9 +2046,15 @@
                     headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': tg.initData },
                     body: JSON.stringify(data)
                 });
-                return res.ok;
+                if (!res.ok) {
+                    const text = await res.text();
+                    console.error('Backend rejected request:', action, res.status, text);
+                    throw new Error(text || 'backend_error');
+                }
+                return true;
             } catch (e) {
-                console.warn('apiCall failed, falling back to local demo:', e);
+                console.warn('apiCall failed, backend unavailable:', e);
+                showNotification('Бэкенд недоступен. Проверь, что бот запущен и домен правильный.', 'error');
                 return false;
             }
         }
