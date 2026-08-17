@@ -985,7 +985,8 @@
         // ============================================================
         // 1. TELEGRAM WEBAPP: реальный / эмуляция для браузера
         // ============================================================
-        const isTelegram = typeof window.Telegram !== 'undefined' && window.Telegram.WebApp && window.Telegram.WebApp.initData;
+        const hasTelegramWebApp = !!(window.Telegram && window.Telegram.WebApp);
+        const isTelegram = hasTelegramWebApp;
 
         if (!isTelegram) {
             window.Telegram = {
@@ -1026,8 +1027,8 @@
         // (HMAC-подпись initData секретом бота) — фронтовый user.id доверять нельзя.
         const BACKEND_API_URL = 'https://bot-1786943902-5404-kaydzhe-mind.bothost.tech';
 
-        const userId = tg.initDataUnsafe.user?.id || 12345;
-        const userData = tg.initDataUnsafe.user || { id: 12345, first_name: 'Тестовый', username: 'test_user' };
+        const userId = tg.initDataUnsafe?.user?.id || 12345;
+        const userData = tg.initDataUnsafe?.user || { id: 12345, first_name: 'Тестовый', username: 'test_user' };
 
         // Тир комиссии — держим в одном месте, зеркалит core.py: <5000₽ — 7%, >=5000₽ — 5%
         const COMMISSION_TIER_THRESHOLD = 5000;
