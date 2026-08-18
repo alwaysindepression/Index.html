@@ -1049,7 +1049,7 @@
 
         // ВАЖНО: на бэкенде каждый запрос нужно проверять через tg.initData
         // (HMAC-подпись initData секретом бота) — фронтовый user.id доверять нельзя.
-        const BACKEND_API_URL = 'bot-1786943902-5404-kaydzhe-mind.bothost.tech';
+        const BACKEND_API_URL = 'https://bot-1786943902-5404-kaydzhe-mind.bothost.tech';
 
         const userId = tg.initDataUnsafe?.user?.id || 12345;
         const userData = tg.initDataUnsafe?.user || { id: 12345, first_name: 'Тестовый', username: 'test_user' };
