@@ -746,7 +746,7 @@
                         <div style="font-size:18px;font-weight:800;" id="profileName">Пользователь</div>
                         <div style="color:rgba(255,255,255,.6);font-size:13px;" id="profileUsername">@username</div>
                         <div style="margin-top:3px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
-                            <span id="profileRating" style="color:var(--gold);font-weight:700;font-size:13px;">4.7</span>
+                            <span id="profileRating" style="color:var(--gold);font-weight:700;font-size:13px;">★ 0.0</span>
                             <span style="color:rgba(255,255,255,.55);font-size:12px;" id="profileReviews">0 отзывов</span>
                             <span class="badge-level" id="profileLevel">Новичок</span>
                         </div>
@@ -833,18 +833,17 @@
                 <div class="setting-item"><span data-key="notify_messages">Уведомления о сообщениях</span><div class="toggle active" id="notifyMessages" onclick="toggleSetting('notifyMessages')"></div></div>
                 <div class="setting-item"><span data-key="notify_reviews">Уведомления об отзывах</span><div class="toggle active" id="notifyReviews" onclick="toggleSetting('notifyReviews')"></div></div>
                 <div class="setting-item"><span data-key="sound">Звук уведомлений</span><div class="toggle active" id="soundToggle" onclick="toggleSetting('soundToggle')"></div></div>
-                <div class="setting-item"><span data-key="sound">Звук уведомлений</span><div class="toggle active" id="soundToggle" onclick="toggleSetting('soundToggle')"></div></div>
 
-<div class="setting-item" onclick="window.open('https://telegra.ph/POLZOVATELSKOE-SOGLASHENIE-08-17-24', '_blank')">
-    <span data-key="terms">Пользовательское соглашение</span>
-    <span style="color:var(--text-secondary);">›</span>
-</div>
-<div class="setting-item" onclick="window.open('https://telegra.ph/POLITIKA-KONFIDENCIALNOSTI-08-17-44', '_blank')">
-    <span data-key="privacy">Политика конфиденциальности</span>
-    <span style="color:var(--text-secondary);">›</span>
-</div>
+                <div class="setting-item" onclick="tg.openLink ? tg.openLink('https://telegra.ph/POLZOVATELSKOE-SOGLASHENIE-08-17-24') : window.open('https://telegra.ph/POLZOVATELSKOE-SOGLASHENIE-08-17-24', '_blank')">
+                    <span data-key="terms">Пользовательское соглашение</span>
+                    <span style="color:var(--text-secondary);">›</span>
+                </div>
+                <div class="setting-item" onclick="tg.openLink ? tg.openLink('https://telegra.ph/POLITIKA-KONFIDENCIALNOSTI-08-17-44') : window.open('https://telegra.ph/POLITIKA-KONFIDENCIALNOSTI-08-17-44', '_blank')">
+                    <span data-key="privacy">Политика конфиденциальности</span>
+                    <span style="color:var(--text-secondary);">›</span>
+                </div>
 
-<div style="margin-top:14px;text-align:center;font-size:11.5px;color:var(--text-secondary);">HoldDeal v5.0</div>
+                <div style="margin-top:14px;text-align:center;font-size:11.5px;color:var(--text-secondary);">HoldDeal v5.0</div>
             </div>
         </div>
 
@@ -907,15 +906,21 @@
     <div class="modal-overlay" id="chatModal">
         <div class="modal">
             <button class="modal-close" onclick="closeChatModal()">✕</button>
-            <div class="modal-title" id="chatTitle">Чат с продавцом</div>
-            <div class="chat-messages" id="chatMessages">
-                <div class="chat-msg other">Здравствуйте! Интересуюсь вашим предложением.<span class="time">12:30</span></div>
-                <div class="chat-msg mine">Добрый день! Да, всё актуально. Можем обсудить детали.<span class="time">12:32</span></div>
-            </div>
+            <div class="modal-title" id="chatTitle">Чат</div>
+            <div class="chat-messages" id="chatMessages"></div>
             <div class="chat-input-row">
                 <input class="chat-input" id="chatInput" maxlength="500" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendMessage()" data-key="chat_placeholder">
                 <button class="btn btn-primary" onclick="sendMessage()" data-key="send">➤</button>
             </div>
+        </div>
+    </div>
+
+    <!-- ===== ЧАТ: список собеседников продавца по лоту ===== -->
+    <div class="modal-overlay" id="chatThreadsModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeChatThreadsModal()">✕</button>
+            <div class="modal-title" id="chatThreadsTitle">Сообщения по объявлению</div>
+            <div id="chatThreadsList"></div>
         </div>
     </div>
 
@@ -1082,6 +1087,8 @@
         let searchQuery = '';
         let selectedLotId = null;
         let currentChatLotId = null;
+        let chatWithUserId = null;
+        let chatPollInterval = null;
         let editingLotId = null;
         let confirmCallback = null;
         let isLoading = false;
@@ -1096,6 +1103,9 @@
         let topUpProvider = null;
         let withdrawAmount = 0;
         let withdrawProvider = null;
+
+        // Состояние спора (нужен transaction_id, а не lot_id)
+        let disputeTransactionId = null;
 
         const CATEGORIES = {
             ru: { all: 'Все категории', dev: 'Разработка', design: 'Дизайн', marketing: 'Маркетинг', copy: 'Копирайтинг', other: 'Другое' },
@@ -1170,7 +1180,7 @@
                 insufficient_balance: 'Недостаточно средств на балансе', min_amount_error: 'Сумма меньше минимальной',
                 topup_created: 'Счёт на пополнение создан, следуйте инструкциям бота', withdraw_created: 'Заявка на вывод создана и отправлена на подтверждение',
                 dispute_created: 'Спор открыт, модератор рассмотрит обращение', enter_reason: 'Опишите причину спора',
-                leave_review: 'Оставить отзыв', submit_review: 'Отправить'
+                leave_review: 'Оставить отзыв', submit_review: 'Отправить', no_dispute_transaction: 'Не удалось найти сделку по этому объявлению'
             },
             en: {
                 filter_all: 'All', filter_low: 'Up to 5000 ₽', filter_high: 'From 5000 ₽',
@@ -1208,7 +1218,7 @@
                 insufficient_balance: 'Insufficient balance', min_amount_error: 'Amount is below the minimum',
                 topup_created: 'Top-up invoice created, follow the bot instructions', withdraw_created: 'Withdrawal request created and sent for confirmation',
                 dispute_created: 'Dispute opened, a moderator will review it', enter_reason: 'Describe the reason for the dispute',
-                leave_review: 'Leave a review', submit_review: 'Submit'
+                leave_review: 'Leave a review', submit_review: 'Submit', no_dispute_transaction: 'Could not find the transaction for this ad'
             }
         };
         function t(key) { return langData[currentLang]?.[key] || key; }
@@ -1303,9 +1313,10 @@
             myLots = (data.my_lots || []).map(mapMyLot);
             favorites = data.favorites || [];
             userReviews = (data.reviews || []).map(r => ({ from: r.from_username || 'user', rating: r.rating, date: (r.created_at || '').slice(0, 10) }));
-            transactions = (data.transactions || []).map(t => ({
-                id: t.id, title: t.title, amount: t.amount, status: t.status, date: (t.created_at || '').slice(0, 10),
-                type: t.kind === 'purchase' ? 'Покупка' : 'Продажа', kind: t.kind, reviewed: t.reviewed, lotId: t.lot_id,
+            transactions = (data.transactions || []).map(tx => ({
+                id: tx.id, title: tx.title, amount: tx.amount, status: tx.status, date: (tx.created_at || '').slice(0, 10),
+                type: tx.kind === 'purchase' ? 'Покупка' : 'Продажа', kind: tx.kind, reviewed: tx.reviewed, lotId: tx.lot_id,
+                sellerId: tx.seller_id, buyerId: tx.buyer_id,
             }));
             withdrawals = (data.withdrawals || []).map(w => ({
                 id: w.id, amount: w.amount, provider: w.provider, destination: w.destination,
@@ -1452,6 +1463,7 @@
                     </div>
                     <div class="my-lot-actions">
                         ${(lot.status === 'approved' || lot.status === 'pending') ? `<button class="btn btn-primary btn-sm" onclick="editLot(${lot.id})">✎</button>` : ''}
+                        ${lot.status === 'approved' ? `<button class="btn btn-outline btn-sm" onclick="openChatThreads(${lot.id})" title="Сообщения">💬</button>` : ''}
                         ${lot.status === 'approved' ? `<button class="btn btn-outline btn-sm" onclick="shareLot(${lot.id})">↗</button>` : ''}
                         ${lot.status === 'pending' ? `<button class="btn btn-danger btn-sm" onclick="confirmDeleteLot(${lot.id})">✕</button>` : ''}
                         <button class="btn btn-outline btn-sm" onclick="openLotModal(${lot.id})">👁</button>
@@ -1627,8 +1639,10 @@
         function openChatFromModal() { if (selectedLotId) { closeModal(); setTimeout(() => openChatForLot(selectedLotId), 300); } }
         function openDisputeFromModal() {
             if (!selectedLotId) return;
+            const tx = transactions.find(txItem => txItem.lotId === selectedLotId && txItem.status === 'waiting_confirm');
+            if (!tx) { showNotification(t('no_dispute_transaction'), 'error'); return; }
             closeModal();
-            setTimeout(() => openDisputeModal(selectedLotId), 300);
+            setTimeout(() => openDisputeModal(tx.id), 300);
         }
 
         // ============================================================
@@ -1814,8 +1828,6 @@
             if (lot.seller === (userData.username || 'user')) { showNotification('Нельзя купить собственное объявление', 'error'); return; }
             sendToBot('buy', { lot_id: lotId });
             showNotification(`Запрос на покупку «${lot.title}» отправлен`, 'success');
-            lot.status = 'in_progress'; lot.dealStartedAt = new Date().toISOString();
-            saveData(); renderAll();
         }
         function viewProfile(seller) { showNotification(`Профиль ${seller}`, 'info'); }
 
@@ -1855,11 +1867,17 @@
             document.querySelectorAll('#topUpProviderGrid .provider-option').forEach(el => el.classList.toggle('selected', el.dataset.provider === id));
             document.getElementById('topUpSubmitBtn').disabled = false;
         }
-        function submitTopUp() {
+        async function submitTopUp() {
             if (!topUpAmount || !topUpProvider) return;
-            sendToBot('topup', { amount: topUpAmount, provider: topUpProvider });
-            showNotification(t('topup_created'), 'success');
-            closeTopUpModal();
+            const btn = document.getElementById('topUpSubmitBtn');
+            btn.disabled = true;
+            const result = await apiCall('topup', { amount: topUpAmount, provider: topUpProvider });
+            btn.disabled = false;
+            if (result && result.pay_url) {
+                showNotification(t('topup_created'), 'success');
+                closeTopUpModal();
+                if (tg.openLink) tg.openLink(result.pay_url); else window.open(result.pay_url, '_blank');
+            }
         }
 
         // ============================================================
@@ -1917,20 +1935,21 @@
 
         // ============================================================
         // 13d. СПОР — открытие с указанием причины
-        //      (зеркалит /dispute_<id> <причина> в bot.py)
+        //      (зеркалит /dispute_<id> <причина> в bot.py; серверу нужен
+        //      именно transaction_id, а не lot_id)
         // ============================================================
-        let disputeLotId = null;
-        function openDisputeModal(lotId) {
-            disputeLotId = lotId;
+        function openDisputeModal(transactionId) {
+            disputeTransactionId = transactionId;
             document.getElementById('disputeReasonInput').value = '';
             document.getElementById('disputeModal').classList.add('show');
         }
-        function closeDisputeModal() { document.getElementById('disputeModal').classList.remove('show'); disputeLotId = null; }
+        function closeDisputeModal() { document.getElementById('disputeModal').classList.remove('show'); disputeTransactionId = null; }
         function submitDispute() {
             const reason = document.getElementById('disputeReasonInput').value.trim();
             if (!reason) { showNotification(t('enter_reason'), 'error'); return; }
-            if (!disputeLotId) return;
-            sendToBot('dispute', { lot_id: disputeLotId, reason });
+            if (!disputeTransactionId) return;
+            sendToBot('dispute', { transaction_id: disputeTransactionId, reason });
+            showNotification(t('dispute_created'), 'success');
             closeDisputeModal();
         }
 
@@ -1975,38 +1994,88 @@
         }
 
         // ============================================================
-        // 14. ЧАТ
+        // 14. ЧАТ — реальные сообщения через /webapp/chat_messages
+        // (GET, список) и /webapp/send_chat_message (POST, отправка).
+        // Пока открыт чат, опрашиваем сервер каждые 4 сек на новые сообщения.
         // ============================================================
-        function openChatForLot(lotId) {
-            const lot = allLots.find(l => l.id === lotId);
-            if (!lot) return;
+        async function openChatForLot(lotId, withUserId = null) {
+            const lot = allLots.find(l => l.id === lotId) || myLots.find(l => l.id === lotId);
             currentChatLotId = lotId;
-            document.getElementById('chatTitle').textContent = `Чат с ${lot.seller}`;
+            chatWithUserId = withUserId;
+            document.getElementById('chatTitle').textContent = lot ? `Чат: ${lot.title}` : 'Чат';
+            document.getElementById('chatMessages').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-secondary);">Загрузка…</div>';
             document.getElementById('chatModal').classList.add('show');
+            await loadChatMessages();
+            if (chatPollInterval) clearInterval(chatPollInterval);
+            chatPollInterval = setInterval(loadChatMessages, 4000);
         }
-        function closeChatModal() { document.getElementById('chatModal').classList.remove('show'); }
 
-        function sendMessage() {
+        async function loadChatMessages() {
+            if (!currentChatLotId) return;
+            let path = `/webapp/chat_messages?lot_id=${currentChatLotId}`;
+            if (chatWithUserId) path += `&with_user_id=${chatWithUserId}`;
+            const data = await apiGet(path);
+            if (!data) return;
+            renderChatMessages(data.messages || []);
+        }
+
+        function renderChatMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            if (!messages.length) {
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-secondary);">Сообщений пока нет</div>';
+                return;
+            }
+            const wasAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 10;
+            container.innerHTML = messages.map(m => {
+                const time = m.created_at ? new Date(m.created_at.replace(' ', 'T')).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'}) : '';
+                return `<div class="chat-msg ${m.mine ? 'mine' : 'other'}">${escapeHtml(m.text)}<span class="time">${time}</span></div>`;
+            }).join('');
+            if (wasAtBottom) container.scrollTop = container.scrollHeight;
+        }
+
+        function closeChatModal() {
+            document.getElementById('chatModal').classList.remove('show');
+            if (chatPollInterval) { clearInterval(chatPollInterval); chatPollInterval = null; }
+            currentChatLotId = null;
+            chatWithUserId = null;
+        }
+
+        async function sendMessage() {
             const input = document.getElementById('chatInput');
             const msg = input.value.trim();
-            if (!msg) return;
-            const container = document.getElementById('chatMessages');
-            const div = document.createElement('div');
-            div.className = 'chat-msg mine';
-            div.innerHTML = `${escapeHtml(msg)}<span class="time">${new Date().toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'})}</span>`;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
+            if (!msg || !currentChatLotId) return;
             input.value = '';
-            sendToBot('chat_message', { lot_id: currentChatLotId, message: msg });
-
-            setTimeout(() => {
-                const reply = document.createElement('div');
-                reply.className = 'chat-msg other';
-                reply.innerHTML = `Спасибо за сообщение! Рассмотрю ваш запрос.<span class="time">${new Date().toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'})}</span>`;
-                container.appendChild(reply);
-                container.scrollTop = container.scrollHeight;
-            }, 1500);
+            const payload = { lot_id: currentChatLotId, text: msg };
+            if (chatWithUserId) payload.to_user_id = chatWithUserId;
+            const result = await apiCall('send_chat_message', payload);
+            if (result) {
+                await loadChatMessages();
+            } else {
+                input.value = msg; // вернуть текст, если отправка не удалась
+            }
         }
+
+        // Список собеседников продавца по конкретному лоту (кто писал)
+        async function openChatThreads(lotId) {
+            const lot = myLots.find(l => l.id === lotId);
+            document.getElementById('chatThreadsTitle').textContent = lot ? `Сообщения: ${lot.title}` : 'Сообщения по объявлению';
+            document.getElementById('chatThreadsList').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-secondary);">Загрузка…</div>';
+            document.getElementById('chatThreadsModal').classList.add('show');
+            const data = await apiGet(`/webapp/chat_threads?lot_id=${lotId}`);
+            const container = document.getElementById('chatThreadsList');
+            if (!data || !data.threads || !data.threads.length) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-text">Пока никто не написал</div></div>';
+                return;
+            }
+            container.innerHTML = data.threads.map(th => `
+                <div class="my-lot-item" style="cursor:pointer;" onclick="closeChatThreadsModal();openChatForLot(${lotId}, ${th.user_id})">
+                    <div class="my-lot-info">
+                        <div class="my-lot-title">@${escapeHtml(th.username || ('id' + th.user_id))}</div>
+                        ${th.unread ? `<div style="font-size:11px;color:var(--primary);font-weight:700;">Непрочитано: ${th.unread}</div>` : ''}
+                    </div>
+                </div>`).join('');
+        }
+        function closeChatThreadsModal() { document.getElementById('chatThreadsModal').classList.remove('show'); }
 
         // ============================================================
         // 15. НАСТРОЙКИ
@@ -2016,12 +2085,15 @@
             document.getElementById('darkToggle').classList.toggle('active');
             localStorage.setItem('darkTheme', document.body.classList.contains('dark'));
         }
+        // Настройки уведомлений/звука — чисто локальные UI-предпочтения.
+        // На бэкенде такого действия нет и быть не должно: раньше эта функция
+        // дёргала sendToBot('setting_update', ...), которого нет в ACTION_HANDLERS,
+        // и при каждом клике по тумблеру человек видел "Ошибка запроса к серверу".
         function toggleSetting(id) {
             const el = document.getElementById(id);
             el.classList.toggle('active');
             const value = el.classList.contains('active');
             localStorage.setItem(id, value);
-            sendToBot('setting_update', { setting: id, value });
         }
         function loadSettings() {
             if (localStorage.getItem('darkTheme') === 'true') { document.body.classList.add('dark'); document.getElementById('darkToggle').classList.add('active'); }
@@ -2149,23 +2221,27 @@
             if (scrollTop === 0 && e.touches[0].clientY - touchStartY2 > 80) {
                 isRefreshing2 = true;
                 showNotification('Обновление…', 'info');
-                setTimeout(() => { initData(); renderAll(); isRefreshing2 = false; showNotification('Обновлено', 'success'); }, 900);
+                refreshAppData().finally(() => { isRefreshing2 = false; showNotification('Обновлено', 'success'); });
             }
         });
 
         // ============================================================
         // 21. ЗАПУСК
         // ============================================================
-        ['lotModal', 'chatModal', 'createLotModal', 'confirmModal', 'topUpModal', 'withdrawModal', 'disputeModal'].forEach(id => {
-            document.getElementById(id).addEventListener('click', function(e) {
+        ['lotModal', 'chatModal', 'chatThreadsModal', 'createLotModal', 'confirmModal', 'topUpModal', 'withdrawModal', 'disputeModal', 'reviewModal'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('click', function(e) {
                 if (e.target === this) {
                     if (id === 'lotModal') closeModal();
                     if (id === 'chatModal') closeChatModal();
+                    if (id === 'chatThreadsModal') closeChatThreadsModal();
                     if (id === 'createLotModal') closeCreateLotModal();
                     if (id === 'confirmModal') closeConfirmModal();
                     if (id === 'topUpModal') closeTopUpModal();
                     if (id === 'withdrawModal') closeWithdrawModal();
                     if (id === 'disputeModal') closeDisputeModal();
+                    if (id === 'reviewModal') closeReviewModal();
                 }
             });
         });
@@ -2173,11 +2249,10 @@
         const savedLang = localStorage.getItem('lang') || 'ru';
         switchLang(savedLang);
 
-        setTimeout(() => {
-            initData();
-            renderAll();
+        setTimeout(async () => {
             loadSettings();
-            if (!isTelegram) showNotification('Демо-режим (данные хранятся локально)', 'info');
+            await refreshAppData();
+            if (!isTelegram) showNotification('Открыто вне Telegram: действия, требующие входа, работать не будут', 'info');
         }, 300);
 
         console.log('HoldDeal MiniApp v5.0 загружен. Режим:', isTelegram ? 'Telegram WebApp' : 'Браузер (эмуляция)');
