@@ -833,8 +833,18 @@
                 <div class="setting-item"><span data-key="notify_messages">Уведомления о сообщениях</span><div class="toggle active" id="notifyMessages" onclick="toggleSetting('notifyMessages')"></div></div>
                 <div class="setting-item"><span data-key="notify_reviews">Уведомления об отзывах</span><div class="toggle active" id="notifyReviews" onclick="toggleSetting('notifyReviews')"></div></div>
                 <div class="setting-item"><span data-key="sound">Звук уведомлений</span><div class="toggle active" id="soundToggle" onclick="toggleSetting('soundToggle')"></div></div>
+                <div class="setting-item"><span data-key="sound">Звук уведомлений</span><div class="toggle active" id="soundToggle" onclick="toggleSetting('soundToggle')"></div></div>
 
-                <div style="margin-top:14px;text-align:center;font-size:11.5px;color:var(--text-secondary);">HoldDeal v5.0</div>
+<div class="setting-item" onclick="window.open('https://telegra.ph/POLZOVATELSKOE-SOGLASHENIE-08-17-24', '_blank')">
+    <span data-key="terms">Пользовательское соглашение</span>
+    <span style="color:var(--text-secondary);">›</span>
+</div>
+<div class="setting-item" onclick="window.open('https://telegra.ph/POLITIKA-KONFIDENCIALNOSTI-08-17-44', '_blank')">
+    <span data-key="privacy">Политика конфиденциальности</span>
+    <span style="color:var(--text-secondary);">›</span>
+</div>
+
+<div style="margin-top:14px;text-align:center;font-size:11.5px;color:var(--text-secondary);">HoldDeal v5.0</div>
             </div>
         </div>
 
@@ -1134,7 +1144,7 @@
                 favorites: 'Избранное', no_favorites: 'Нет избранных объявлений',
                 settings: 'Настройки', language: 'Язык / Language', dark_theme: 'Тёмная тема',
                 notify_purchase: 'Уведомления о покупках', notify_messages: 'Уведомления о сообщениях',
-                notify_reviews: 'Уведомления об отзывах', sound: 'Звук уведомлений',
+                notify_reviews: 'Уведомления об отзывах', sound: 'Звук уведомлений', terms: 'Пользовательское соглашение', privacy: 'Политика конфиденциальности',
                 buy: 'Купить', close: 'Закрыть', send: '➤',
                 pending: 'На модерации', approved: 'Активно', sold: 'Продано', rejected: 'Отклонено', in_progress: 'В процессе', disputed: 'Спор',
                 no_reviews: 'У вас пока нет отзывов', purchase: 'Покупка', sale: 'Продажа',
@@ -1172,7 +1182,7 @@
                 favorites: 'Favorites', no_favorites: 'No favorites',
                 settings: 'Settings', language: 'Language', dark_theme: 'Dark theme',
                 notify_purchase: 'Purchase notifications', notify_messages: 'Message notifications',
-                notify_reviews: 'Review notifications', sound: 'Sound notifications',
+                notify_reviews: 'Review notifications', sound: 'Sound notifications', terms: 'Terms of Service', privacy: 'Privacy Policy',
                 buy: 'Buy', close: 'Close', send: '➤',
                 pending: 'Pending', approved: 'Active', sold: 'Sold', rejected: 'Rejected', in_progress: 'In progress', disputed: 'Disputed',
                 no_reviews: 'No reviews yet', purchase: 'Purchase', sale: 'Sale',
@@ -1536,8 +1546,9 @@
             document.getElementById('profileName').textContent = name;
             document.getElementById('profileUsername').textContent = '@' + (userData.username || 'username');
             document.getElementById('profileAvatar').textContent = name[0].toUpperCase();
-            document.getElementById('profileRating').textContent = `★ 4.7`;
-            document.getElementById('profileReviews').textContent = `${userReviews.length} отзывов`;
+            const ratingDisplay = currentUserRating ? Number(currentUserRating).toFixed(1) : '0.0';
+            document.getElementById('profileRating').textContent = `★ ${ratingDisplay}`;
+            document.getElementById('profileReviews').textContent = `${currentUserReviewsCount} отзывов`;
             document.getElementById('profileBalance').textContent = userBalance.toLocaleString() + ' ₽';
             document.getElementById('profileLotsCount').textContent = myLots.length;
             document.getElementById('profileDealsCount').textContent = transactions.length;
